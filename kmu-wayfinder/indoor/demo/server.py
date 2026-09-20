@@ -38,11 +38,12 @@ from backend.app.routing.policy import Constraints        # noqa: E402
 #   full      : 원본 도면 자동추출 (2~7층)
 #   published : 도면 판독 근거만 (3층 338/337 + 2층 202)
 GRAPHS_SPEC = {
+    "campus": ROOT / "data" / "published" / "campus_v1.json",
     "nav": ROOT / "data" / "demo" / "mirae_nav_v1.json",
     "full": ROOT / "data" / "demo" / "mirae_full_v1.json",
     "published": ROOT / "data" / "published" / "mirae_indoor_v1.json",
 }
-DEFAULT_GRAPH = os.environ.get("NAV_GRAPH_KEY", "nav")
+DEFAULT_GRAPH = os.environ.get("NAV_GRAPH_KEY", "campus")
 PLAN_DIRS = [
     ROOT / "data" / "raw" / "navmaps",
     ROOT / "data" / "raw" / "floorplans",

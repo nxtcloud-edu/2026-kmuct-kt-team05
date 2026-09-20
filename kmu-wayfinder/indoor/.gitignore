@@ -29,3 +29,6 @@ data/routes.geojson
 # 층별 지도(시안)는 데모 동작에 필요하므로 포함한다.
 # 원본 공식 도면(data/raw/floorplans)만 제외.
 !data/raw/navmaps/
+
+# 병합 산출물 - 직접 편집/커밋하지 않는다 (scripts/merge_graphs.py 로 생성)
+data/published/campus_v1.json
