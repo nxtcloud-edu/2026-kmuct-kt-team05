@@ -24,6 +24,7 @@ from __future__ import annotations
 import datetime as _dt
 import hashlib
 import json
+import os
 import pathlib
 import re
 import struct
@@ -41,12 +42,13 @@ SOURCE_PAGE = "https://engineering.kookmin.ac.kr/engineering/etc/engineering-flo
 CAMPUS_MAP_PAGE = (
     "https://www.kookmin.ac.kr/user/unIntr/campusGuide/bukakCampusGuide/index.do"
 )
-# 첨부된 도면 목록 (사용자 제공). 없으면 페이지 추출 결과만 사용한다.
+# 첨부된 도면 목록 (있으면 대조용으로 사용). 없으면 페이지 추출 결과만 쓴다.
+# 다른 사람이 클론해서 실행하면 보통 없으므로 선택 사항이다.
 ATTACHED_LIST = pathlib.Path(
-    r"C:\Users\User\Documents\Codex\2026-09-20\ai-352\outputs\미래관_도면목록.json"
-)
+    os.environ.get("MIRAE_ASSET_LIST",
+                   str(ROOT / "data" / "sources" / "attached_asset_list.json")))
 
-UA = "Mozilla/5.0 (campus-nav research; KMU capstone; contact=local)"
+UA = "Mozilla/5.0 (kmu-indoor-nav research; KMU capstone; contact=local)"
 
 
 def now_iso() -> str:

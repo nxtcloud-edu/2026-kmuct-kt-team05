@@ -1,6 +1,6 @@
 # P0-1 기준 재현 감사 (baseline audit)
 
-작성: 2026-09-20 · 대상: `C:\Users\User\campus-nav`
+작성: 2026-09-20 · 대상: `kmu-indoor-nav/` (작업 시 로컬 경로)
 
 ## 저장소 상태
 
