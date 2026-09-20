@@ -67,6 +67,16 @@ STAIR = "mirae/stair/1"
 
 
 # ---------------------------------------------------------------- 색 분류
+# 시안은 층마다 민트 색조가 다르다 (표본: 복도의 min(g,b)-r 이 10~29 로 편차가 큼).
+#   1F 복도 (221,244,233) diff=12      6F 복도 (216,242,226) diff=10
+#   3F 복도 (218,244,234) diff=16      3F 방   (236,248,248) diff=12
+#   5F 복도 (204,246,233) diff=29      2F 복도 (214,247,234) diff=20
+# 1F 복도와 3F 방의 diff 가 같으므로 **색조 임계값으로는 복도와 방을 구분할 수 없다.**
+# 그래서 색으로는 '연한 청록(cyan)'까지만 묶고, 복도/방 구분은 형태로 한다
+# (복도는 좁고 방은 넓다 -> split_cyan 참고).
+CYAN_MIN_DIFF = 5
+
+
 def classify(c) -> str:
     r, g, b = c[0], c[1], c[2]
     if r > 245 and g > 245 and b > 245:
@@ -77,14 +87,34 @@ def classify(c) -> str:
         return "stairs"
     if g > 140 and g - r > 40 and g - b > 25:
         return "entrance"
-    if g > 200 and b > 200 and r < 240 and min(g, b) - r > 6:
-        return "walk"
+    if g > 200 and b > 200 and min(g, b) - r >= CYAN_MIN_DIFF:
+        return "cyan"          # 복도 또는 방 내부. 형태로 나눈다
     if abs(r - g) < 14 and abs(g - b) < 14 and 110 < r < 240:
         return "gray"
     return "other"
 
 
+#: 골격(복도망)을 만드는 대상. 방 내부(room)는 제외한다.
 WALKABLE = {"walk", "elevator", "stairs", "entrance"}
+
+#: 복도/방 구분용 열림(opening) 반경(셀). 이보다 넓은 청록 영역을 방으로 본다.
+#: 시안 표본: 복도 폭 2~5셀(12~30px), 방 폭 14셀 내외(~84px).
+ROOM_OPEN_R = 6
+
+
+def split_cyan(grid, gw, gh) -> None:
+    """'cyan' 셀을 형태 기준으로 'walk'(복도) 와 'room'(방 내부) 으로 나눈다.
+
+    층마다 민트 색조가 달라 색으로는 구분할 수 없으므로 폭으로 구분한다.
+    열림 연산(침식->팽창)을 하면 좁은 복도는 사라지고 넓은 방만 남는다.
+    """
+    cyan = [[grid[y][x] == "cyan" for x in range(gw)] for y in range(gh)]
+    wide = dilate(erode(cyan, gw, gh, ROOM_OPEN_R), gw, gh, ROOM_OPEN_R)
+    for y in range(gh):
+        for x in range(gw):
+            if grid[y][x] != "cyan":
+                continue
+            grid[y][x] = "room" if wide[y][x] else "walk"
 
 
 def cell_grid(img: Image.Image) -> tuple[list[list[str]], int, int]:
@@ -105,6 +135,7 @@ def cell_grid(img: Image.Image) -> tuple[list[list[str]], int, int]:
                     break
             else:
                 grid[gy][gx] = cnt.most_common(1)[0][0]
+    split_cyan(grid, gw, gh)     # 'cyan' -> 'walk'(복도) / 'room'(방 내부)
     return grid, gw, gh
 
 
@@ -348,6 +379,64 @@ def simplify(pts: list[list[float]], tol: float = 2.5) -> list[list[float]]:
     return simplify(pts[:wi + 1], tol)[:-1] + simplify(pts[wi:], tol)
 
 
+#: 끊긴 골격 요소를 잇는 최대 거리(px). 도면상 이 정도 간격은 보통 문/개구부다.
+BRIDGE_MAX_PX = 170.0
+
+
+def bridge_components(nodes_set, sk_edges, gw, gh):
+    """끊긴 골격 요소를 가까운 노드끼리 이어 하나로 만든다.
+
+    시안은 복도 위에 호실번호·아이콘·문 표시를 덧그려서 복도 마스크가
+    수십 조각으로 끊긴다. 닫힘 연산만으로는 (반경 5 에서도) 50~87% 에
+    머물렀다. 그래서 그래프 수준에서 가까운 요소를 잇는다.
+    도면상 BRIDGE_MAX_PX 이내의 간격은 실제로는 문이나 개구부다.
+
+    반환: 추가된 엣지 목록 [(a, b)]
+    """
+    parent = {n: n for n in nodes_set}
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+            return True
+        return False
+
+    for a, b, _ in sk_edges:
+        if a in parent and b in parent:
+            union(a, b)
+
+    added = []
+    limit_cells = BRIDGE_MAX_PX / CELL
+    for _ in range(200):
+        groups: dict[tuple, list] = {}
+        for n in nodes_set:
+            groups.setdefault(find(n), []).append(n)
+        if len(groups) <= 1:
+            break
+        best = None
+        keys = list(groups)
+        for i in range(len(keys)):
+            for j in range(i + 1, len(keys)):
+                for p in groups[keys[i]]:
+                    for q in groups[keys[j]]:
+                        d = math.dist(p, q)
+                        if d <= limit_cells and (best is None or d < best[0]):
+                            best = (d, p, q)
+        if best is None:
+            break
+        _, p, q = best
+        union(p, q)
+        added.append((p, q))
+    return added
+
+
 # ---------------------------------------------------------------- 덩어리
 def blobs(grid, gw, gh, kind: str, allowed: set[tuple[int, int]] | None = None):
     """색 덩어리 검출.
@@ -464,25 +553,68 @@ def ride_acc():
 
 
 # ---------------------------------------------------------------- 층 추출
-def first_walkable_toward(mask, gw, gh, src: tuple[float, float],
-                          dst: tuple[int, int]) -> tuple[int, int] | None:
-    """src(셀 좌표, 실수) 에서 dst(셀) 방향으로 직선 진행하며
-    **처음 만나는 통행 셀**을 돌려준다.
+def nearest_walkable(mask, gw, gh, cy: float, cx: float,
+                     max_r: int = 45) -> tuple[int, int] | None:
+    """(cy,cx) 에서 가장 가까운 통행 셀. 링을 넓혀가며 찾는다.
 
-    OCR 호실 이름표는 방 안쪽에 있으므로 그 위치를 문으로 쓰면
-    노드가 방 내부에 놓이고 복도까지의 연결선이 벽을 관통한다.
-    이름표에서 복도 방향으로 나아가 통행 영역에 진입하는 첫 지점이
-    방과 복도의 경계, 즉 문에 해당한다.
+    OCR 호실 이름표는 방 안쪽에 있으므로, 이름표에서 가장 가까운 복도 셀이
+    그 방의 문에 해당한다.
     """
-    sy, sx = src
-    dy, dx = dst[0] - sy, dst[1] - sx
-    steps = max(2, int(max(abs(dy), abs(dx)) * 2))
-    for i in range(steps + 1):
-        t = i / steps
-        y, x = int(round(sy + dy * t)), int(round(sx + dx * t))
-        if 0 <= y < gh and 0 <= x < gw and mask[y][x]:
-            return (y, x)
+    y0, x0 = int(round(cy)), int(round(cx))
+    if 0 <= y0 < gh and 0 <= x0 < gw and mask[y0][x0]:
+        return (y0, x0)
+    for r in range(1, max_r + 1):
+        best, bd = None, 1e18
+        for dy in range(-r, r + 1):
+            for dx in (-r, r) if abs(dy) != r else range(-r, r + 1):
+                y, x = y0 + dy, x0 + dx
+                if not (0 <= y < gh and 0 <= x < gw) or not mask[y][x]:
+                    continue
+                d = (y - cy) ** 2 + (x - cx) ** 2
+                if d < bd:
+                    best, bd = (y, x), d
+        if best:
+            return best
     return None
+
+
+def bfs_to_skeleton(mask, skel, gw, gh, start: tuple[int, int],
+                    limit: int = 4000):
+    """통행 마스크 안에서만 이동해 가장 가까운 골격 셀까지의 경로를 찾는다.
+
+    직선으로 이으면 방이나 벽을 가로지르는데, 복도 안에서 BFS 하면
+    연결선이 실제 통행 가능한 형태가 된다.
+    반환: (골격셀, [셀경로])  없으면 (None, [])
+    """
+    if skel[start[0]][start[1]]:
+        return start, [start]
+    from collections import deque
+    prev = {start: None}
+    q = deque([start])
+    n = 0
+    while q and n < limit:
+        cur = q.popleft()
+        n += 1
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                if dy == 0 and dx == 0:
+                    continue
+                y, x = cur[0] + dy, cur[1] + dx
+                if not (0 <= y < gh and 0 <= x < gw):
+                    continue
+                if (y, x) in prev or not mask[y][x]:
+                    continue
+                prev[(y, x)] = cur
+                if skel[y][x]:
+                    path = [(y, x)]
+                    p = cur
+                    while p is not None:
+                        path.append(p)
+                        p = prev[p]
+                    path.reverse()
+                    return (y, x), path
+                q.append((y, x))
+    return None, []
 
 
 def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False):
@@ -576,6 +708,7 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
 
     anchors = []   # (kind, key, attach_cell, px, py, extra)
     label_px: dict[str, tuple[float, float]] = {}   # 호실 -> 이름표 표시 좌표
+    door_path: dict[str, list[list[float]]] = {}    # 호실 -> 문~복도 실제 경로
     # 승강기: 여러 코어가 있을 수 있다. 최대 3개까지 받고 facility 는 나중에
     # 층간 위치 클러스터링으로 결정한다 (main 참고).
     for i, b in enumerate(evb[:3]):
@@ -594,32 +727,31 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
             anchors.append(("entrance", f"{fid}/entrance/{i+1}", a,
                             b["cx"] * CELL, b["cy"] * CELL, i + 1))
     for r in labels:
-        a = nearest_skel(r["y"] / CELL, r["x"] / CELL)
-        if a:
-            # 라벨이 통행공간에서 너무 멀면 버린다
-            d = math.dist((a[0], a[1]), (r["y"] / CELL, r["x"] / CELL))
-            if d <= 45:
-                # 문 위치 = 이름표에서 복도 방향으로 나아가 통행영역에 들어가는 첫 셀
-                dc = first_walkable_toward(mask, gw, gh,
-                                           (r["y"] / CELL, r["x"] / CELL), a)
-                if dc is None:
-                    dc = a
-                # 부착점은 '문' 기준으로 다시 잡는다. 이름표 기준으로 잡으면
-                # 연결선이 길어져 벽을 가로지를 수 있다.
-                a2 = nearest_skel(dc[0], dc[1]) or a
-                door_px = (dc[1] * CELL + CELL / 2, dc[0] * CELL + CELL / 2)
-                anchors.append(("room", f"{fid}/door/{r['room']}", a2,
-                                door_px[0], door_px[1], r["room"]))
-                label_px[r["room"]] = (float(r["x"]), float(r["y"]))
+        # 문 = 이름표에서 가장 가까운 복도 셀
+        dc = nearest_walkable(mask, gw, gh, r["y"] / CELL, r["x"] / CELL)
+        if dc is None:
+            continue
+        # 부착점 = 복도 안에서 BFS 로 찾은 가장 가까운 골격 셀 (직선 아님)
+        a2, path = bfs_to_skeleton(mask, skel, gw, gh, dc)
+        if a2 is None:
+            continue
+        door_px = (dc[1] * CELL + CELL / 2, dc[0] * CELL + CELL / 2)
+        anchors.append(("room", f"{fid}/door/{r['room']}", a2,
+                        door_px[0], door_px[1], r["room"]))
+        label_px[r["room"]] = (float(r["x"]), float(r["y"]))
+        door_path[r["room"]] = [[c[1] * CELL + CELL / 2, c[0] * CELL + CELL / 2]
+                                for c in path]
 
     forced = {a[2] for a in anchors}
-    # 최대 요소만 남기고 나머지 조각은 버린다 (고립 경로 방지)
-    keep = set(main_cells) | forced
-    skel = [[skel[y][x] and (y, x) in keep for x in range(gw)] for y in range(gh)]
+    # 복도가 조각나 있으므로 최대 요소만 남기지 않는다.
+    # 대신 골격을 전부 쓰고, 끊긴 요소는 아래에서 그래프 수준으로 잇는다.
     skel = prune_spurs(skel, gw, gh, forced)
     n_skel = sum(sum(r) for r in skel)
     skel_cells = [(y, x) for y in range(gh) for x in range(gw) if skel[y][x]]
     nodes_set, sk_edges = skeleton_graph(skel, gw, gh, forced)
+    bridges = bridge_components(nodes_set, sk_edges, gw, gh)
+    for p, q in bridges:
+        sk_edges.append((p, q, [p, q]))
 
     if diag:
         print(f"\n=== {fname} -> {fid} ({label}) ===")
@@ -698,10 +830,16 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
                                    "x_px": round(pxx, 1), "y_px": round(pyy, 1)},
                     "geo_point": None, "name": f"{extra}호 문",
                     "facility_id": None, "source_refs": REFS, "notes": []})
-                L = math.dist((pxx, pyy), (bx, by)) * m_per_px
+                # 문~복도 연결은 직선이 아니라 복도 안에서 찾은 실제 경로를 쓴다
+                geom = door_path.get(extra)
+                if not geom or len(geom) < 2:
+                    geom = [[round(pxx, 1), round(pyy, 1)],
+                            [round(bx, 1), round(by, 1)]]
+                geom = simplify([[round(p[0], 1), round(p[1], 1)] for p in geom], 3.0)
+                L = sum(math.dist(geom[k], geom[k + 1])
+                        for k in range(len(geom) - 1)) * m_per_px
                 emit(f"{fid}/e/door/{extra}", nid, base, "door",
-                     round(max(0.5, L), 2), door_acc(),
-                     [[round(pxx, 1), round(pyy, 1)], [round(bx, 1), round(by, 1)]])
+                     round(max(0.5, L), 2), door_acc(), geom)
                 places.append({
                     "id": f"{fid}/{extra}", "name": f"미래관 {extra}호",
                     "building_id": "mirae", "floor_id": fid, "room_label": extra,
