@@ -1,0 +1,50 @@
+{
+  "_readme": [
+    "UI 담당 소유. 노드 ID → 어느 SVG의 어느 픽셀에 찍을지.",
+    "out_* 노드의 좌표는 tools/build-campus-map.mjs 가 OSM 실측 좌표를 투영한 값입니다(건물 무게중심).",
+    "정확한 출입구 위치로 옮기려면 /dev/coords 에서 드래그하세요.",
+    "층별 도면(bukak-*, johyung-*)의 좌표는 아직 임의 배치입니다 — 실제 도면 확보 후 교체 필요.",
+    "건물 데이터 출처: © OpenStreetMap contributors (ODbL)"
+  ],
+
+  "out_library": { "svg": "/maps/campus.svg", "x": 105.4, "y": 59.8 },
+  "out_global": { "svg": "/maps/campus.svg", "x": 105.7, "y": 114.9 },
+  "out_bukak": { "svg": "/maps/campus.svg", "x": 567.7, "y": 154.7 },
+  "out_johyung": { "svg": "/maps/campus.svg", "x": 670.4, "y": 172.6 },
+  "out_iprc": { "svg": "/maps/campus.svg", "x": 81.5, "y": 219 },
+  "out_engineering": { "svg": "/maps/campus.svg", "x": 159.3, "y": 228.2 },
+  "out_science": { "svg": "/maps/campus.svg", "x": 919.5, "y": 264.3 },
+  "out_hq": { "svg": "/maps/campus.svg", "x": 653.9, "y": 265.2 },
+  "out_econ": { "svg": "/maps/campus.svg", "x": 508.6, "y": 287.4 },
+  "out_law": { "svg": "/maps/campus.svg", "x": 765.9, "y": 324 },
+  "out_intl": { "svg": "/maps/campus.svg", "x": 581.1, "y": 341.5 },
+  "out_gym": { "svg": "/maps/campus.svg", "x": 817.2, "y": 372.1 },
+  "out_concert": { "svg": "/maps/campus.svg", "x": 621.9, "y": 378.3 },
+  "out_dorm_d": { "svg": "/maps/campus.svg", "x": 872.3, "y": 391.1 },
+  "out_biz": { "svg": "/maps/campus.svg", "x": 675.8, "y": 416.5 },
+  "out_guest": { "svg": "/maps/campus.svg", "x": 831.9, "y": 455.7 },
+  "out_welfare": { "svg": "/maps/campus.svg", "x": 418.2, "y": 473.7 },
+  "out_art": { "svg": "/maps/campus.svg", "x": 693.2, "y": 529 },
+  "out_dorm": { "svg": "/maps/campus.svg", "x": 831, "y": 550.6 },
+  "out_mirae": { "svg": "/maps/campus.svg", "x": 588.9, "y": 559.5 },
+  "out_lifelong": { "svg": "/maps/campus.svg", "x": 749.5, "y": 657.6 },
+
+  "bukak_1f_exit_w": { "svg": "/maps/campus.svg", "x": 548, "y": 196 },
+  "out_plaza": { "svg": "/maps/campus.svg", "x": 575, "y": 228 },
+  "out_johyung_stair": { "svg": "/maps/campus.svg", "x": 648, "y": 212 },
+
+  "bukak_4f_411": { "svg": "/maps/bukak-4f.svg", "x": 470, "y": 150 },
+  "bukak_4f_hall": { "svg": "/maps/bukak-4f.svg", "x": 470, "y": 250 },
+  "bukak_4f_stair_a": { "svg": "/maps/bukak-4f.svg", "x": 190, "y": 250 },
+  "bukak_4f_bridge": { "svg": "/maps/bukak-4f.svg", "x": 690, "y": 250 },
+
+  "bukak_1f_stair_a": { "svg": "/maps/bukak-1f.svg", "x": 190, "y": 250 },
+  "bukak_1f_lobby": { "svg": "/maps/bukak-1f.svg", "x": 330, "y": 250 },
+
+  "johyung_1f_entrance": { "svg": "/maps/johyung-1f.svg", "x": 110, "y": 390 },
+  "johyung_1f_lobby": { "svg": "/maps/johyung-1f.svg", "x": 250, "y": 300 },
+
+  "johyung_3f_bridge": { "svg": "/maps/johyung-3f.svg", "x": 110, "y": 250 },
+  "johyung_3f_hall": { "svg": "/maps/johyung-3f.svg", "x": 400, "y": 250 },
+  "johyung_3f_302": { "svg": "/maps/johyung-3f.svg", "x": 560, "y": 150 }
+}

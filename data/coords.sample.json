@@ -1,0 +1,28 @@
+{
+  "_readme": [
+    "UI 담당 소유 파일입니다. 엔진/데이터 담당은 이 파일을 열지 않습니다.",
+    "노드 ID → 어떤 SVG의 어느 픽셀에 찍을지 매핑.",
+    "실제 작업 시 이 파일을 data/coords.json 으로 복사해서 채우세요.",
+    "좌표는 해당 SVG의 viewBox 기준입니다. 캠퍼스 전체 지도 viewBox='0 0 1000 700', 층별 도면 viewBox='0 0 800 500' 로 통일 권장.",
+    "노드 ID 목록은 GET /api/nodes 또는 data/campus-graph.json 에서 확인하세요."
+  ],
+
+  "bukak_4f_411":       { "svg": "/maps/bukak-4f.svg",   "x": 320, "y": 180 },
+  "bukak_4f_hall":      { "svg": "/maps/bukak-4f.svg",   "x": 360, "y": 210 },
+  "bukak_4f_stair_a":   { "svg": "/maps/bukak-4f.svg",   "x": 250, "y": 240 },
+  "bukak_4f_bridge":    { "svg": "/maps/bukak-4f.svg",   "x": 520, "y": 200 },
+
+  "bukak_1f_stair_a":   { "svg": "/maps/bukak-1f.svg",   "x": 250, "y": 240 },
+  "bukak_1f_lobby":     { "svg": "/maps/bukak-1f.svg",   "x": 300, "y": 300 },
+  "bukak_1f_exit_w":    { "svg": "/maps/bukak-1f.svg",   "x": 180, "y": 320 },
+
+  "out_plaza":          { "svg": "/maps/campus.svg",     "x": 430, "y": 380 },
+  "out_johyung_stair":  { "svg": "/maps/campus.svg",     "x": 540, "y": 430 },
+
+  "johyung_1f_entrance":{ "svg": "/maps/johyung-1f.svg", "x": 120, "y": 260 },
+  "johyung_1f_lobby":   { "svg": "/maps/johyung-1f.svg", "x": 200, "y": 260 },
+
+  "johyung_3f_bridge":  { "svg": "/maps/johyung-3f.svg", "x": 100, "y": 220 },
+  "johyung_3f_hall":    { "svg": "/maps/johyung-3f.svg", "x": 260, "y": 240 },
+  "johyung_3f_302":     { "svg": "/maps/johyung-3f.svg", "x": 340, "y": 190 }
+}
