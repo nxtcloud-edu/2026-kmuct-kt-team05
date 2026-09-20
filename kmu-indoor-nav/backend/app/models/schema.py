@@ -193,6 +193,11 @@ class FloorPlan:
     geo_transform: dict | None = None        # 지리 정합 결과. 미정합이면 None
     geo_error_estimate_m: Attr = dataclasses.field(default_factory=Attr)
     revision_date: str | None = None         # 도면 개정일. 불명 -> None
+    #: 이 도면의 픽셀을 재서 엣지 길이를 만들었는가.
+    #: True  = 길이가 도면 유래. 축척이 unknown 이면 길이도 있을 수 없다.
+    #: False = 길이가 다른 출처(실측, OSM 등)에서 온다. 도면은 표시용이며
+    #:         축척이 없어도 길이를 가질 수 있다. 캠퍼스 배치도가 이 경우다.
+    lengths_from_plan: bool = True
     source_refs: list[str] = dataclasses.field(default_factory=list)
     usage_terms: str = "unknown"
     notes: list[str] = dataclasses.field(default_factory=list)
@@ -338,9 +343,10 @@ class Accessibility:
         d = d or {}
         return cls(**{f: Attr.from_json(d.get(f)) for f in cls.FIELDS})
 
-    def unknown_fields(self, required: Iterable[str]) -> list[str]:
-        return [f for f in required
-                if not getattr(self, f).known_at_least(MIN_VERIFICATION_FOR_ACCESSIBILITY)]
+    def unknown_fields(self, required: Iterable[str],
+                       level: Verification = MIN_VERIFICATION_FOR_ACCESSIBILITY,
+                       ) -> list[str]:
+        return [f for f in required if not getattr(self, f).known_at_least(level)]
 
 
 @dataclasses.dataclass
@@ -365,6 +371,30 @@ class Edge:
     elevator_to_floor: str | None = None
     source_refs: list[str] = dataclasses.field(default_factory=list)
     notes: list[str] = dataclasses.field(default_factory=list)
+    #: 이 엣지의 접근성 판정에 요구하는 최소 검증 수준.
+    #: 파트(데이터 출처)별로 다르게 선언할 수 있다. 실내 도면 기반 데이터는
+    #: 현장 실측을 요구하지만, 실외 OSM 기반 데이터는 그 수준의 근거를 얻을 수
+    #: 없으므로 낮춰 선언한다.
+    #: None 이면 전역 기본값(MIN_VERIFICATION_FOR_ACCESSIBILITY)을 쓴다.
+    #: 정책이 절대 하한으로 다시 제한하므로, 데이터가 이 값을 낮춰도
+    #: unknown 을 통행 가능으로 만들 수는 없다.
+    min_accessibility_verification: "Verification | None" = None
+
+    def accessibility_threshold(self, absolute_floor: "Verification") -> "Verification":
+        """실제로 적용할 최소 검증 수준.
+
+        데이터가 선언한 값과 정책의 절대 하한 중 **높은** 쪽을 쓴다.
+        데이터 파일이 정책을 임의로 무력화하지 못하게 하는 장치다.
+        """
+        declared = self.min_accessibility_verification \
+            or MIN_VERIFICATION_FOR_ACCESSIBILITY
+        return declared if declared.rank >= absolute_floor.rank else absolute_floor
+
+    @property
+    def evidence_is_relaxed(self) -> bool:
+        """전역 기본값보다 낮은 근거 수준으로 판정되는 엣지인가."""
+        d = self.min_accessibility_verification
+        return d is not None and d.rank < MIN_VERIFICATION_FOR_ACCESSIBILITY.rank
 
     def to_json(self) -> dict:
         return {
@@ -379,7 +409,11 @@ class Edge:
             "elevator_from_floor": self.elevator_from_floor,
             "elevator_to_floor": self.elevator_to_floor,
             "source_refs": self.source_refs, "notes": self.notes,
+            "min_accessibility_verification":
+                self.min_accessibility_verification.value
+                if self.min_accessibility_verification else None,
         }
+
 
 
 @dataclasses.dataclass
@@ -473,12 +507,22 @@ def validate_dataset(
         if n.floor_id and n.floor_id not in floors:
             raise SchemaError(f"node {n.id}: 알 수 없는 floor_id {n.floor_id}")
         if n.plan_point:
-            want = f"plan:{n.floor_id}"
-            if n.plan_point.coordinate_space != want:
+            # 좌표 공간은 '층' 또는 그 층이 쓰는 '도면' 으로 식별한다.
+            # 두 형태를 모두 허용한다:
+            #   plan:<floor_id>   층마다 도면이 따로인 경우 (미래관)
+            #   plan:<plan_id>    여러 층이 한 장을 공유하는 경우 (캠퍼스 배치도.
+            #                     건물 발자국은 층이 달라도 같은 위치다)
+            # 어느 쪽이든 다른 층/도면의 값을 복사하면 불일치로 걸린다.
+            fl = floors.get(n.floor_id) if n.floor_id else None
+            allowed = {f"plan:{n.floor_id}"}
+            if fl and fl.plan_id:
+                allowed.add(f"plan:{fl.plan_id}")
+            if n.plan_point.coordinate_space not in allowed:
                 raise SchemaError(
                     f"node {n.id}: plan 좌표공간 불일치 "
-                    f"({n.plan_point.coordinate_space} != {want}). "
-                    "층간 좌표를 복사했을 가능성이 있다."
+                    f"({n.plan_point.coordinate_space} not in "
+                    f"{sorted(allowed)}). "
+                    "다른 층/도면의 좌표를 복사했을 가능성이 있다."
                 )
         if n.plan_point is None and n.geo_point is None:
             problems.append(f"node {n.id}: 좌표 없음")
@@ -492,7 +536,12 @@ def validate_dataset(
             if ref not in nodes:
                 raise SchemaError(f"edge {e.id}: 알 수 없는 노드 {ref}")
         a, b = nodes[e.from_node], nodes[e.to_node]
-        if e.kind not in VERTICAL_EDGE_KINDS and e.kind != EdgeKind.ENTRANCE:
+        # 층을 넘어도 되는 엣지: 수직 이동 시설, 출입구,
+        # 그리고 건물 간 연결통로(브리지/지하연결). 연결통로는 본질적으로
+        # 서로 다른 건물의 서로 다른 층을 잇는다. 경사 캠퍼스에서는
+        # A동 1층과 B동 지하1층이 같은 높이에서 만나는 일이 흔하다.
+        if e.kind not in VERTICAL_EDGE_KINDS and e.kind not in (
+                EdgeKind.ENTRANCE, EdgeKind.BUILDING_CONNECTOR):
             if a.floor_id != b.floor_id:
                 raise SchemaError(
                     f"edge {e.id}({e.kind.value}): 서로 다른 층을 직접 연결 "

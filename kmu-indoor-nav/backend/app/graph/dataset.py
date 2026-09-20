@@ -132,6 +132,7 @@ def _plan_from_json(d: dict) -> FloorPlan:
         page_tab_id=d.get("page_tab_id"),
         mapping_status=MappingStatus(d.get("mapping_status", "pending_review")),
         scale_m_per_px=Attr.from_json(d.get("scale_m_per_px")),
+        lengths_from_plan=bool(d.get("lengths_from_plan", True)),
         control_points=d.get("control_points", []),
         geo_transform=d.get("geo_transform"),
         geo_error_estimate_m=Attr.from_json(d.get("geo_error_estimate_m")),

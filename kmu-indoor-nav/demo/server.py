@@ -47,6 +47,9 @@ DEFAULT_GRAPH = os.environ.get("NAV_GRAPH_KEY", "campus")
 PLAN_DIRS = [
     ROOT / "data" / "raw" / "navmaps",
     ROOT / "data" / "raw" / "floorplans",
+    # 통합 저장소에서는 팀원 앱의 지도 자산(캠퍼스 배치도 등)을 그대로 쓴다.
+    # 복사해 두 벌로 관리하지 않는다.
+    ROOT.parent / "public" / "maps",
 ]
 HERE = pathlib.Path(__file__).resolve().parent
 
@@ -96,8 +99,14 @@ def places_payload(DS: Dataset, overlay: bool = False) -> dict:
     floors = []
     for f in DS.floors.values():
         pl = DS.plan_for_floor(f.id)
+        # 표시 공간. 여러 층이 한 장의 도면을 공유하면 같은 값이 된다
+        # (캠퍼스 배치도: 건물 발자국은 층이 달라도 같은 위치).
+        # UI 는 층이 아니라 이 값으로 화면을 묶는다.
+        space = f"plan:{pl.id}" if pl else f"plan:{f.id}"
         floors.append({
             "id": f.id, "label": f.label, "sort_order": f.sort_order,
+            "display_space": space,
+            "shares_plan": bool(pl and not pl.lengths_from_plan),
             "plan_image": (f"/plan/{pl.source_filename}" if pl and pl.source_filename
                            else None),
             "plan_size": [pl.width_px, pl.height_px] if pl else None,
@@ -133,8 +142,25 @@ def places_payload(DS: Dataset, overlay: bool = False) -> dict:
 
 
 def resolve_place(DS: Dataset, q: str) -> tuple[str | None, list[dict]]:
+    """질의를 출발/도착 노드로 확정한다.
+
+    받는 형태는 3가지다.
+      1) 노드 id        그대로 사용
+      2) 장소 id        UI 드롭다운이 보내는 값. 장소의 문 노드로 변환
+      3) 이름/호실      검색. 모호하면 확정하지 않고 후보를 돌려준다
+
+    2)를 명시적으로 처리해야 한다. 이름 검색에 맡기면 'mirae/F3/338' 이
+    부분일치로 우연히 맞는 데 의존하게 되고, 'campus/place/bukak_1f' 처럼
+    이름이 id 에 없는 장소는 영영 찾지 못한다.
+    """
     if q in DS.nodes:
         return q, []
+    p = DS.places.get(q)
+    if p is not None:
+        if p.door_node_ids:
+            return p.door_node_ids[0], []
+        return None, [{"id": p.id, "name": p.name,
+                       "note": "이 장소에 연결된 문 노드가 없습니다."}]
     cands = DS.find_places(q)
     if len(cands) == 1 and cands[0].door_node_ids:
         return cands[0].door_node_ids[0], []
@@ -171,10 +197,13 @@ class H(BaseHTTPRequestHandler):
 
         if u.path.startswith("/plan/"):
             name = pathlib.PurePosixPath(u.path).name
+            # 배치도는 SVG, 층 도면은 PNG 다. 확장자로 판단한다.
+            ctype = ("image/svg+xml; charset=utf-8"
+                     if name.lower().endswith(".svg") else "image/png")
             for d in PLAN_DIRS:
                 f = d / name
                 if f.is_file() and f.parent.resolve() == d.resolve():
-                    self._send(200, f.read_bytes(), "image/png")
+                    self._send(200, f.read_bytes(), ctype)
                     return
             self._json({"error": "not found"}, 404)
             return
@@ -246,7 +275,11 @@ class H(BaseHTTPRequestHandler):
             ns = one("no_stairs", "0") in ("1", "true", "True") or wc
             objective = one("objective", "fastest")
             profile = one("profile", "wheelchair" if wc else "normal")
-            c = Constraints(no_stairs=ns, wheelchair=wc)
+            # 근거 없는 구간을 지나는 '조사용 후보 경로' 허용 여부.
+            # 기본은 끔. 켜도 status 는 ok 가 아니라 candidate_unverified 다.
+            cand = one("candidate", "0") in ("1", "true", "True")
+            c = Constraints(no_stairs=ns, wheelchair=wc,
+                            allow_unverified_as_candidate=cand)
             r = route(DS, src, dst, profile, objective, c)
             r["graph_key"] = key
             self._json(r)

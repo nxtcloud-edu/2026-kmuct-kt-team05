@@ -250,6 +250,8 @@
     <div class="opts">
       <button class="opt" id="oNoStairs" aria-pressed="false">계단 없이</button>
       <button class="opt" id="oWheel" aria-pressed="false">♿ 휠체어</button>
+      <button class="opt" id="oCand" aria-pressed="false"
+              title="접근성 근거가 없는 구간도 지나는 후보 경로를 봅니다. 확인된 경로가 아닙니다.">후보까지 보기</button>
     </div>
 
     <button id="go">길찾기</button>
@@ -267,7 +269,11 @@ const cv = $("#cv"), ctx = cv.getContext("2d");
 const DPR = Math.min(window.devicePixelRatio || 1, 2.5);
 
 const A = {
-  graph:"nav", places:[], floors:[], facilities:[],
+  /* 기본은 통합 그래프(campus): 실외 + 미래관 외 건물 + 미래관 실내.
+     'nav' 은 미래관만 담긴 옛 그래프라 캠퍼스가 보이지 않는다.
+     ?graph=nav 로 강제할 수 있다. */
+  graph:new URLSearchParams(location.search).get("graph") || "campus",
+  places:[], floors:[], facilities:[],
   floor:null, imgs:{}, route:null, session:{}, done:new Set(),
   view:{k:1,tx:0,ty:0}, minK:0.05, maxK:14,
 };
@@ -280,20 +286,69 @@ async function boot(){
   A.places=p.places; A.floors=p.floors; A.facilities=p.facilities||[];
 
   A.floors.sort((a,b)=>b.sort_order-a.sort_order);
-  $("#floors").innerHTML = A.floors.map(f=>
-    `<button data-f="${f.id}">${f.label.replace("지하","B").replace("층","")}</button>`).join("");
-  $("#floors").querySelectorAll("button").forEach(b=>
-    b.onclick=()=>setFloor(b.dataset.f,true));
 
-  const byF={}; for(const x of A.places) (byF[x.floor_id] ||= []).push(x);
-  const opt = A.floors.map(f=>{
-    const it=(byF[f.id]||[]).sort((a,b)=>String(a.room_label).localeCompare(String(b.room_label)));
-    return it.length ? `<optgroup label="${f.label}">`+
-      it.map(x=>`<option value="${x.id}">${x.room_label}호 · ${f.label}</option>`).join("")+
-      `</optgroup>` : "";
+  /* 표시 공간(display_space)으로 묶는다. 캠퍼스 배치도처럼 여러 층이 한 장을
+     공유하면 버튼 하나로 합친다. 미래관은 층마다 도면이 달라 그대로 층별이다. */
+  A.spaces = [];
+  const seen = {};
+  for(const f of A.floors){
+    const k = f.display_space || `plan:${f.id}`;
+    if(!seen[k]){
+      seen[k] = { key:k, floors:[], label:f.label, plan_image:f.plan_image,
+                  plan_size:f.plan_size, shared:!!f.shares_plan };
+      A.spaces.push(seen[k]);
+    }
+    seen[k].floors.push(f.id);
+  }
+  /* 공유 도면은 층 이름 대신 묶음 이름을 쓴다 (건물 22개를 나열할 수 없다) */
+  for(const s of A.spaces){
+    if(s.shared && s.floors.length>1) s.label = "캠퍼스";
+  }
+  A.spaceOf = {};
+  for(const s of A.spaces) for(const fid of s.floors) A.spaceOf[fid]=s.key;
+
+  $("#floors").innerHTML = A.spaces.map(s=>
+    `<button data-s="${s.key}">${s.label.replace("지하","B").replace("층","")}</button>`).join("");
+  $("#floors").querySelectorAll("button").forEach(b=>
+    b.onclick=()=>setSpace(b.dataset.s,true));
+
+  /* 출발/도착 목록.
+     미래관은 호실 단위라 층별로 묶고, 그 외 건물은 층 단위 지점밖에 없으므로
+     건물별로 묶는다. 층마다 optgroup 을 만들면 81개가 생겨 못 쓴다. */
+  const groupOf = (p) => {
+    const fid = p.floor_id || "";
+    if(fid.startsWith("mirae/")){
+      const f = A.floors.find(x=>x.id===fid);
+      return "미래관 " + (f ? f.label : fid);
+    }
+    const parts = fid.split("/");           // campus/f/<건물>/<층>
+    const b = parts.length>2 ? parts[2] : fid;
+    return b==="OUTDOOR" ? "실외" : b;
+  };
+  /* 숫자 호실에만 '호'를 붙인다. '북악관 1층호' 가 되지 않게. */
+  const isRoom = (s) => /^[0-9]/.test(String(s||""));
+  const labelOf = (p) => {
+    const r = p.room_label || p.name || p.id;
+    if(!isRoom(r)) return r;
+    const f = A.floors.find(x=>x.id===p.floor_id);
+    return `${r}호 · ${f ? f.label : ""}`;
+  };
+  const groups = {};
+  for(const p of A.places) (groups[groupOf(p)] ||= []).push(p);
+  /* 미래관을 먼저, 그다음 실외, 그다음 건물 이름순 */
+  const gkeys = Object.keys(groups).sort((a,b)=>{
+    const rank = k => k.startsWith("미래관") ? 0 : (k==="실외" ? 1 : 2);
+    return rank(a)-rank(b) || a.localeCompare(b,"ko");
+  });
+  const opt = gkeys.map(g=>{
+    const it = groups[g].slice().sort((a,b)=>
+      String(a.room_label).localeCompare(String(b.room_label),"ko",{numeric:true}));
+    return `<optgroup label="${g}">`+
+      it.map(x=>`<option value="${x.id}">${labelOf(x)}</option>`).join("")+
+      `</optgroup>`;
   }).join("");
   $("#from").innerHTML=opt; $("#to").innerHTML=opt;
-  pick("#from", ["mirae/F2/202","mirae/F1/102"]);
+  pick("#from", ["campus/place/bukak_1f","mirae/F2/202","mirae/F1/102"]);
   pick("#to",   ["mirae/F3/338","mirae/F3/337"]);
 
   $("#meta").innerHTML =
@@ -301,25 +356,46 @@ async function boot(){
     `엘리베이터 ${st.elevators_registered}대<br>`+
     `${vs.evidence_level||""}<br>소요시간은 추정값입니다.`;
 
-  await setFloor(A.floors.find(f=>f.id==="mirae/F3") ? "mirae/F3" : A.floors[0].id);
+  await setSpace(A.spaceOf["mirae/F3"] || A.spaces[0].key);
 }
 function pick(sel, cands){
   const el=$(sel);
   for(const c of cands){ if([...el.options].some(o=>o.value===c)){ el.value=c; return; } }
 }
 
-async function setFloor(fid, manual){
-  A.floor = A.floors.find(f=>f.id===fid) || A.floors[0];
+async function setSpace(key, manual){
+  A.space = A.spaces.find(s=>s.key===key) || A.spaces[0];
+  /* 이 공간에 속한 층 전체를 함께 그린다 */
+  A.visible = new Set(A.space.floors);
+  A.floor = A.floors.find(f=>f.id===A.space.floors[0]);
   $("#floors").querySelectorAll("button").forEach(b=>
-    b.setAttribute("aria-pressed", String(b.dataset.f===A.floor.id)));
-  if(A.floor.plan_image && !A.imgs[A.floor.id]){
+    b.setAttribute("aria-pressed", String(b.dataset.s===A.space.key)));
+  const img = A.space.plan_image;
+  if(img && !A.imgs[A.space.key]){
     await new Promise(res=>{
       const im=new Image();
-      im.onload=()=>{A.imgs[A.floor.id]=im;res();};
-      im.onerror=()=>res(); im.src=A.floor.plan_image;
+      im.onload=()=>{A.imgs[A.space.key]=im;res();};
+      im.onerror=()=>res(); im.src=img;
     });
   }
-  if(manual && A.route && A.route.status==="ok") fitRoute(); else fitAll();
+  if(manual && A.route && isRouted(A.route)) fitRoute(); else fitAll();
+}
+/* 경로가 화면에 그릴 값이 있는 상태인가. 조사용 후보도 포함한다. */
+function isRouted(r){
+  return r && (r.status==="ok" || r.status==="candidate_unverified");
+}
+/* 층이 현재 화면에 보이는가 */
+function onScreen(fid){ return A.visible ? A.visible.has(fid) : fid===A.floor?.id; }
+/* 경로 구간이 현재 화면 좌표공간에 속하는가.
+   space 는 좌표공간 문자열이다 (예: plan:mirae/F3, plan:campus/plan/overview). */
+function segOnScreen(space){
+  if(!space || space==="geo" || space==="transition") return false;
+  if(space===A.space?.key) return true;
+  return onScreen(String(space).replace(/^plan:/,""));
+}
+
+async function setFloor(fid, manual){
+  return setSpace(A.spaceOf[fid] || `plan:${fid}`, manual);
 }
 
 /* ================= 뷰 ================= */
@@ -347,7 +423,7 @@ function botPad(){
   return $("#sheet").getBoundingClientRect().height*0.55;
 }
 function fitAll(){
-  const im=A.imgs[A.floor?.id];
+  const im=A.imgs[A.space?.key];
   if(!im){draw();return;}
   fitBox(0,0,im.width,im.height);
 }
@@ -363,13 +439,38 @@ function fitRoute(){
 const T=(x,y)=>[x*A.view.k+A.view.tx, y*A.view.k+A.view.ty];
 
 function routePts(){
-  if(!A.route||A.route.status!=="ok")return [];
+  if(!isRouted(A.route))return [];
   const out=[];
   for(const s of A.route.segments){
-    if(s.space!==`plan:${A.floor?.id}`) continue;
+    if(!segOnScreen(s.space)) continue;
     for(const p of (s.polyline_px||[])) out.push(p);
   }
   return out;
+}
+
+/* 현재 화면에서 경로가 시작되는 점과 끝나는 점.
+   캠퍼스 배치도에는 장소 라벨을 띄우지 않으므로(건물명이 그림에 이미 있다)
+   최소한 어디서 출발해 어디로 향하는지는 표시해야 한다. */
+function routeEnds(){
+  if(!isRouted(A.route)) return null;
+  const segs=A.route.segments;
+  const vis=[];
+  for(let i=0;i<segs.length;i++){
+    const s=segs[i];
+    if(segOnScreen(s.space) && (s.polyline_px||[]).length) vis.push({i,s});
+  }
+  if(!vis.length) return null;
+  const first=vis[0], last=vis[vis.length-1];
+  const fp=first.s.polyline_px[0];
+  const lpArr=last.s.polyline_px;
+  const lp=lpArr[lpArr.length-1];
+  return {
+    start:fp, end:lp,
+    /* 이 화면이 경로의 실제 시작/끝을 담고 있는가.
+       아니면 다른 층에서 들어오거나 나가는 중간 구간이다. */
+    isOrigin:first.i===0,
+    isDest:last.i===segs.length-1,
+  };
 }
 
 /* ================= 렌더 ================= */
@@ -378,7 +479,7 @@ function draw(){
   ctx.clearRect(0,0,vw(),vh());
   ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,vw(),vh());
 
-  const im=A.imgs[A.floor?.id];
+  const im=A.imgs[A.space?.key];
   if(im){
     ctx.save();
     ctx.setTransform(DPR*A.view.k,0,0,DPR*A.view.k, DPR*A.view.tx, DPR*A.view.ty);
@@ -402,9 +503,11 @@ function draw(){
     marker(pts[pts.length-1], "#dc2626", "도착");
   }
 
-  // 시설 아이콘 (현재 층)
-  for(const f of A.facilities){
-    if(f.floor_id!==A.floor?.id) continue;
+  // 시설 아이콘 (현재 화면)
+  // 공유 도면(캠퍼스 배치도)에서는 그리지 않는다. 층마다 좌표가 같아서
+  // 한 건물에 16개가 겹쳐 찍힌다.
+  if(!A.space?.shared) for(const f of A.facilities){
+    if(!onScreen(f.floor_id)) continue;
     const [x,y]=T(f.x,f.y);
     if(x<-30||y<-30||x>vw()+30||y>vh()+30) continue;
     const ico = f.kind==="elevator_lobby"?"🛗":(f.kind==="stair_landing"?"🪜":"🚪");
@@ -416,11 +519,16 @@ function draw(){
   }
 
   // 호실 라벨 (확대 시)
-  if(A.view.k>0.55){
+  //
+  // 캠퍼스 배치도에서는 띄우지 않는다. 이유가 둘이다.
+  //   1) 배치도 그림에 건물 이름이 이미 인쇄되어 있다 (중복).
+  //   2) 건물 좌표가 층마다 같아서 '북악관 1층'~'16층' 이 한 점에 쌓인다.
+  // 미래관처럼 층별 도면이 있는 화면에서는 호실 번호가 꼭 필요하므로 그린다.
+  if(A.view.k>0.55 && !A.space?.shared){
     ctx.font=`700 ${Math.min(15,10+A.view.k*2)}px system-ui`;
     ctx.textAlign="center"; ctx.textBaseline="middle";
     for(const p of A.places){
-      if(p.floor_id!==A.floor?.id||!p.label_plan_point) continue;
+      if(!onScreen(p.floor_id)||!p.label_plan_point) continue;
       const [x,y]=T(p.label_plan_point.x_px,p.label_plan_point.y_px);
       if(x<0||y<0||x>vw()||y>vh()) continue;
       const t=p.room_label;
@@ -429,6 +537,38 @@ function draw(){
       roundRect(x-w/2,y-10,w,20,6); ctx.fill();
       ctx.fillStyle="#fff"; ctx.fillText(t,x,y);
     }
+  }
+
+  // 경로 시작/끝 표시
+  drawEnds();
+}
+
+/* 출발·도착(또는 화면 진입·이탈) 표시. 라벨 2개만 띄운다. */
+function drawEnds(){
+  const e=routeEnds();
+  if(!e) return;
+  const name = (sel)=>{
+    const o=$(sel).selectedOptions[0];
+    return o ? o.textContent.replace(/ ·.*$/,"") : "";
+  };
+  const items=[
+    {p:e.start, col:"#22c55e",
+     t:e.isOrigin ? `출발 ${name("#from")}` : "여기로 들어옴"},
+    {p:e.end, col:"#ef4444",
+     t:e.isDest ? `도착 ${name("#to")}` : "여기서 층 이동"},
+  ];
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  for(const it of items){
+    const [x,y]=T(it.p[0],it.p[1]);
+    if(x<-60||y<-60||x>vw()+60||y>vh()+60) continue;
+    ctx.beginPath(); ctx.arc(x,y,7,0,7);
+    ctx.fillStyle=it.col; ctx.fill();
+    ctx.lineWidth=2.5; ctx.strokeStyle="#fff"; ctx.stroke();
+    ctx.font="700 12px system-ui";
+    const w=ctx.measureText(it.t).width+12;
+    ctx.fillStyle="rgba(13,17,23,.88)";
+    roundRect(x-w/2,y-30,w,19,6); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.fillText(it.t,x,y-20.5);
   }
 }
 function roundRect(x,y,w,h,r){
@@ -492,7 +632,7 @@ function zoomBy(f){
 }
 $("#zin").onclick=()=>zoomBy(1.45);
 $("#zout").onclick=()=>zoomBy(1/1.45);
-$("#fit").onclick=()=>{ A.route&&A.route.status==="ok" ? fitRoute() : fitAll(); };
+$("#fit").onclick=()=>{ isRouted(A.route) ? fitRoute() : fitAll(); };
 
 /* ================= 하단 시트 ================= */
 const sheet=$("#sheet");
@@ -539,6 +679,7 @@ function tog(id,cb){
 tog("#oNoStairs");
 tog("#oWheel",()=>{ if($("#oWheel").getAttribute("aria-pressed")==="true")
   $("#oNoStairs").setAttribute("aria-pressed","true"); });
+tog("#oCand");
 $("#swap").onclick=()=>{
   const a=$("#from").value; $("#from").value=$("#to").value; $("#to").value=a;
 };
@@ -551,6 +692,7 @@ async function findRoute(){
     objective:objective(),
     no_stairs:$("#oNoStairs").getAttribute("aria-pressed")==="true"?"1":"0",
     wheelchair:$("#oWheel").getAttribute("aria-pressed")==="true"?"1":"0",
+    candidate:$("#oCand").getAttribute("aria-pressed")==="true"?"1":"0",
   });
   let r;
   try{ r=await (await fetch("/api/route?"+qs)).json(); }
@@ -559,11 +701,13 @@ async function findRoute(){
   A.route=r; A.done.clear();
   render(r);
   const touched=new Set((r.metrics&&r.metrics.floors_touched)||[]);
-  $("#floors").querySelectorAll("button").forEach(b=>
-    b.dataset.onroute = touched.has(b.dataset.f)?"1":"0");
-  if(r.status==="ok"){
+  $("#floors").querySelectorAll("button").forEach(b=>{
+    const s=A.spaces.find(x=>x.key===b.dataset.s);
+    b.dataset.onroute = (s && s.floors.some(f=>touched.has(f))) ? "1":"0";
+  });
+  if(isRouted(r)){
     const f0=r.metrics.floors_touched[0];
-    if(f0 && f0!==A.floor?.id) await setFloor(f0);
+    if(f0 && !onScreen(f0)) await setFloor(f0);
     fitRoute();
     sheetState(null);
   } else draw();
@@ -572,7 +716,7 @@ $("#go").onclick=findRoute;
 
 function render(r){
   const S=$("#summary"), B=$("#sumBadges"), R=$("#reason"), L=$("#steps");
-  if(r.status==="ok"){
+  if(isRouted(r)){
     const m=r.metrics, t=Math.round(m.estimated_time_s);
     const mm=Math.floor(t/60), ss=t%60;
     S.classList.add("on");
@@ -587,8 +731,17 @@ function render(r){
       bs.push(`<span class="badge b-mut">${m.floors_touched.map(fl=>{
         const f=A.floors.find(x=>x.id===fl); return f?f.label:fl;}).join(" → ")}</span>`);
     bs.push(`<span class="badge b-mut">추정</span>`);
+    /* 조사용 후보 경로는 확인된 경로와 반드시 구분해서 보여준다 */
+    if(r.status==="candidate_unverified"){
+      bs.push(`<span class="badge b-warn">접근성 미확인</span>`);
+      R.classList.add("on");
+      R.innerHTML = `<b>접근성이 확인된 경로가 아닙니다.</b><br>`+
+        `근거가 없는 구간 ${(r.segments_requiring_survey||[]).length}개를 지납니다. `+
+        `현장 확인이 필요합니다.`;
+    } else {
+      R.classList.remove("on");
+    }
     B.innerHTML=bs.join("");
-    R.classList.remove("on");
     L.innerHTML = r.instructions.map((s,i)=>{
       const ev=/엘리베이터/.test(s.text), st=/계단/.test(s.text);
       const ic=ev?"🛗":(st?"🪜":(/통과/.test(s.text)?"🚪":"↑"));

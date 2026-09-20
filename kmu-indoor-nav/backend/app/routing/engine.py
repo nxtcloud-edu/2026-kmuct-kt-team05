@@ -59,6 +59,10 @@ class Status(str):
 
 OK = Status("ok")
 INSUFFICIENT = Status("insufficient_verified_data")
+#: 접근성 근거가 없는 구간을 지나는 '조사용 후보 경로'.
+#: 호출부가 allow_unverified_as_candidate 로 명시 요청했을 때만 나온다.
+#: ok 와 반드시 구분해서 표시해야 한다.
+CANDIDATE = Status("candidate_unverified")
 NO_ROUTE = Status("no_route_under_constraints")
 OUTSIDE = Status("outside_coverage")
 
@@ -356,8 +360,11 @@ def build_segments(ds: Dataset, path: list[Traversal]) -> list[dict]:
                 "coordinates": [[a.geo_point.lon, a.geo_point.lat],
                                 [b.geo_point.lon, b.geo_point.lat]],
             }
-        elif a.plan_point and b.plan_point and a.floor_id == b.floor_id:
-            seg["space"] = f"plan:{a.floor_id}"
+        elif a.plan_point and b.plan_point and \
+                a.plan_point.coordinate_space == b.plan_point.coordinate_space:
+            # 같은 좌표 공간이면 층이 달라도 한 장의 그림 위에 그릴 수 있다.
+            # 캠퍼스 배치도에서 건물 사이 연결통로가 이 경우다.
+            seg["space"] = a.plan_point.coordinate_space
             seg["polyline_px"] = e.geometry or [
                 [a.plan_point.x_px, a.plan_point.y_px],
                 [b.plan_point.x_px, b.plan_point.y_px],
@@ -499,15 +506,37 @@ def route(
         tf2 = TraversalFilter(ds, c, profile, ignore_unverified=True)
         relaxed = dijkstra(ds, origin_node, dest_node, tf2, lambda tr: tr.time_s or 0.0)
         if relaxed is not None:
-            return {**base, "status": str(INSUFFICIENT), "route_id": None,
-                    "segments": [], "metrics": None,
+            if not c.allow_unverified_as_candidate:
+                return {**base, "status": str(INSUFFICIENT), "route_id": None,
+                        "segments": [], "metrics": None,
+                        "blocked_counts": tf.block_counts,
+                        "reasons": [
+                            "필수 접근성 속성이 미확인인 구간을 제외하면 경로가 없습니다.",
+                            "미확인 속성을 현장 조사하면 경로가 성립할 수 있습니다.",
+                            f"미확인 구간 수: {len(tf.unverified_edge_ids)}",
+                        ],
+                        "unverified_edge_ids": sorted(tf.unverified_edge_ids)}
+            # 호출부가 '조사용 후보 경로'를 명시적으로 요청했다.
+            # 경로를 주되, 접근성을 확인했다고 말하지 않는다.
+            path, tf = relaxed[0], tf2
+            metrics = summarize(ds, path, tf)
+            survey = sorted({
+                tr.edge.id for tr in path
+                if tr.edge.id in tf2.unverified_edge_ids})
+            return {**base, "status": str(CANDIDATE),
+                    "route_id": f"{origin_node}->{dest_node}:{objective}:candidate",
+                    "segments": build_segments(ds, path),
+                    "metrics": metrics,
+                    "approximate": True,
+                    "instructions": instructions(ds, path),
                     "blocked_counts": tf.block_counts,
+                    "accessibility_confirmed": False,
+                    "segments_requiring_survey": survey,
                     "reasons": [
-                        "필수 접근성 속성이 미확인인 구간을 제외하면 경로가 없습니다.",
-                        "미확인 속성을 현장 조사하면 경로가 성립할 수 있습니다.",
-                        f"미확인 구간 수: {len(tf.unverified_edge_ids)}",
-                    ],
-                    "unverified_edge_ids": sorted(tf.unverified_edge_ids)}
+                        "접근성이 확인된 경로가 아닙니다. 현장 조사용 후보입니다.",
+                        f"근거가 없는 구간 {len(survey)}개를 통과합니다.",
+                        "실제 통행 가능 여부는 현장에서 확인해야 합니다.",
+                    ]}
         return {**base, "status": str(NO_ROUTE), "route_id": None,
                 "segments": [], "metrics": None,
                 "blocked_counts": tf.block_counts,

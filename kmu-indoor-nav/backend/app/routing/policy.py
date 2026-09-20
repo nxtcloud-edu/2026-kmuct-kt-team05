@@ -18,6 +18,7 @@ import dataclasses
 
 from ..models.schema import (
     MIN_VERIFICATION_FOR_ACCESSIBILITY,
+    Verification,
     Accessibility,
     Edge,
     EdgeKind,
@@ -25,7 +26,7 @@ from ..models.schema import (
 )
 
 #: 정책 버전. 한계값/가정값을 바꾸면 반드시 올린다.
-POLICY_VERSION = "policy-2026.09.20-01"
+POLICY_VERSION = "policy-2026.09.20-02"
 
 
 # ---------------------------------------------------------------- 시간 모델
@@ -71,6 +72,15 @@ class Constraints:
     max_threshold_m: float = 0.02
     #: 실내 선호에서 허용할 추가 소요시간 비율
     indoor_detour_ratio: float = 0.35
+    #: 접근성 판정의 **절대 하한**. 파트가 선언한 수준이 이보다 낮아도
+    #: 이 값으로 끌어올린다. unknown 을 통행 가능으로 만들 수 없게 하는 장치다.
+    #: 기본값을 drawing_inferred 로 두면, 실외처럼 현장 실측이 불가능한
+    #: 파트도 '근거가 있기는 한' 속성만 통과한다.
+    absolute_min_verification: Verification = Verification.DRAWING_INFERRED
+    #: 근거 없는 구간을 지나는 '조사용 후보 경로'를 허용할지.
+    #: True 라도 결과 status 는 ok 가 아니라 candidate_unverified 이며,
+    #: 조사 대상 구간 목록이 함께 반환된다. 기본값은 False 를 유지한다.
+    allow_unverified_as_candidate: bool = False
 
     def signature(self) -> dict:
         return {
@@ -82,6 +92,11 @@ class Constraints:
             "max_threshold_m": self.max_threshold_m if self.wheelchair else None,
             "required_accessibility_fields":
                 list(self.required_accessibility_fields) if self.wheelchair else [],
+            "default_min_verification":
+                MIN_VERIFICATION_FOR_ACCESSIBILITY.value if self.wheelchair else None,
+            "absolute_min_verification":
+                self.absolute_min_verification.value if self.wheelchair else None,
+            "allow_unverified_as_candidate": self.allow_unverified_as_candidate,
         }
 
 
@@ -128,26 +143,24 @@ def edge_block_reason(edge: Edge, c: Constraints, closed: bool) -> Block | None:
 
     # --- 휠체어: 필수 속성 검증 여부 ---
     # unknown 을 통행 가능으로 간주하지 않는다.
+    # 요구 수준은 엣지(파트)별 선언을 따르되, 정책의 절대 하한으로 제한한다.
+    level = edge.accessibility_threshold(c.absolute_min_verification)
     required = _required_fields_for(edge, c)
-    if acc.unknown_fields(required):
+    if acc.unknown_fields(required, level):
         return BLOCK_UNVERIFIED
 
     # --- 휠체어: 관측값이 한계를 넘음 (비용으로 상쇄 불가) ---
     up = acc.slope_up_pct
-    if up.known_at_least(MIN_VERIFICATION_FOR_ACCESSIBILITY) and \
-            float(up.value) > c.max_slope_up_pct:
+    if up.known_at_least(level) and float(up.value) > c.max_slope_up_pct:
         return BLOCK_SLOPE
     dn = acc.slope_down_pct
-    if dn.known_at_least(MIN_VERIFICATION_FOR_ACCESSIBILITY) and \
-            float(dn.value) > c.max_slope_down_pct:
+    if dn.known_at_least(level) and float(dn.value) > c.max_slope_down_pct:
         return BLOCK_SLOPE
     w = acc.clear_width_m
-    if w.known_at_least(MIN_VERIFICATION_FOR_ACCESSIBILITY) and \
-            float(w.value) < c.min_clear_width_m:
+    if w.known_at_least(level) and float(w.value) < c.min_clear_width_m:
         return BLOCK_WIDTH
     th = acc.threshold_m
-    if th.known_at_least(MIN_VERIFICATION_FOR_ACCESSIBILITY) and \
-            float(th.value) > c.max_threshold_m:
+    if th.known_at_least(level) and float(th.value) > c.max_threshold_m:
         return BLOCK_THRESHOLD
 
     return None
@@ -222,7 +235,8 @@ def edge_preference_cost(edge: Edge, profile: str) -> float:
         cost += {"normal": 1.0, "elderly": 30.0, "wheelchair": 1e6}.get(profile, 1.0)
 
     for attr in (acc.slope_up_pct, acc.slope_down_pct):
-        if attr.known_at_least(MIN_VERIFICATION_FOR_ACCESSIBILITY):
+        if attr.known_at_least(edge.accessibility_threshold(
+                Verification.DRAWING_INFERRED)):
             excess = max(0.0, abs(float(attr.value)) - 2.0)
             w = {"normal": 0.02, "elderly": 0.5, "wheelchair": 2.0}.get(profile, 0.1)
             cost += w * excess ** 2

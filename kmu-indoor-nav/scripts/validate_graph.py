@@ -53,10 +53,11 @@ def topology_checks(ds: Dataset) -> tuple[list[str], list[str]]:
                 warn.append(f"출입구 노드인데 entrance 엣지가 없음: {nid}")
 
     # 층간 오접속 (스키마에서 이미 막지만 이중 확인)
+    # 건물 간 연결통로는 서로 다른 건물의 서로 다른 층을 잇는 것이 정상이다.
     for e in ds.edges:
         a, b = ds.nodes[e.from_node], ds.nodes[e.to_node]
         if a.floor_id != b.floor_id and e.kind not in VERTICAL_EDGE_KINDS \
-                and e.kind != EdgeKind.ENTRANCE:
+                and e.kind not in (EdgeKind.ENTRANCE, EdgeKind.BUILDING_CONNECTOR):
             fatal.append(f"층간 오접속: {e.id} ({e.kind.value}) "
                          f"{a.floor_id} -> {b.floor_id}")
 
@@ -66,9 +67,18 @@ def topology_checks(ds: Dataset) -> tuple[list[str], list[str]]:
             fatal.append(f"근거(source_refs) 없는 엣지: {e.id}")
 
     # 근거 없는 엘리베이터/문/관통 통로
+    #
+    # 정차층 근거가 없는 승강기는 '발행 금지' 사유가 아니라 '접근성 경로에
+    # 사용 금지' 사유다. 라우팅 엔진이 c.wheelchair 일 때 이 승강기를
+    # BLOCK_UNVERIFIED 로 제거하므로(engine.TraversalFilter), 보장은 경로
+    # 계산 시점에 유지된다. 일반 최단경로에는 쓸 수 있고 접근성을 주장하지도
+    # 않으므로, 여기서는 경고로 남기고 발행은 허용한다.
     for ev in ds.elevators.values():
         if not ev.served_floors_evidence.is_known:
-            fatal.append(f"정차층 근거 없는 승강기: {ev.id}")
+            warn.append(
+                f"정차층 근거 없는 승강기: {ev.id} "
+                f"— 휠체어/접근성 경로에는 엔진이 사용하지 않는다. "
+                f"일반 경로에만 쓰인다.")
     for e in ds.edges:
         if e.kind == EdgeKind.ELEVATOR_RIDE and e.facility_id not in ds.elevators:
             fatal.append(f"미등록 승강기를 참조: {e.id}")
@@ -82,13 +92,23 @@ def topology_checks(ds: Dataset) -> tuple[list[str], list[str]]:
             warn.append(f"일방향 엣지(역방향 없음): {e.id} — 의도된 제한인지 확인")
 
     # 축척 없는 층의 길이 값
+    #
+    # 이 규칙은 '도면 픽셀을 재서 길이를 얻는' 데이터에만 해당한다.
+    # 도면 픽셀 × 축척으로 길이를 만들었다면 축척이 없으면 길이도 없어야 한다.
+    # 길이가 실측/OSM 처럼 다른 출처에서 오면 도면은 표시용이므로 검사하지 않는다
+    # (도면이 lengths_from_plan=False 로 선언한다).
     for e in ds.edges:
         a = ds.nodes[e.from_node]
-        if a.floor_id and not ds.scale_known(a.floor_id):
-            if e.horizontal_length_m.is_known:
-                fatal.append(
-                    f"축척 unknown 인 층({a.floor_id})의 엣지에 길이가 채워져 있음: {e.id}"
-                )
+        if not a.floor_id:
+            continue
+        fl = ds.floors.get(a.floor_id)
+        plan = ds.plans.get(fl.plan_id) if (fl and fl.plan_id) else None
+        if plan is None or not plan.lengths_from_plan:
+            continue
+        if not ds.scale_known(a.floor_id) and e.horizontal_length_m.is_known:
+            fatal.append(
+                f"축척 unknown 인 층({a.floor_id})의 엣지에 길이가 채워져 있음: {e.id}"
+            )
     return fatal, warn
 
 
