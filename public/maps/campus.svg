@@ -216,6 +216,10 @@
       <path d="M648 448 L600 405" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
       <path d="M600 405 L545 385" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
       <path d="M545 385 L505 330" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
+      <path d="M600 405 L600 470" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
+      <path d="M600 405 L640 470" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
+      <path d="M545 385 L568 460" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
+      <path d="M505 330 L520 452" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
       <g>
         <rect x="598.4" y="425" width="49.2" height="16" rx="8" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.2" />
         <text x="623" y="437" font-size="9.5" font-weight="700" fill="#6d28d9" text-anchor="middle">계단 24칸</text>
@@ -225,6 +229,7 @@
     </g>
     <g>
       <path d="M545 205 L505 240" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
+      <path d="M545 205 L578 300" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
       <path d="M505 240 L578 300" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
       <path d="M578 300 L620 347" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
       <path d="M620 347 L678 365" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />

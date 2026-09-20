@@ -337,7 +337,13 @@
 
         { "//": "건물 앞 길 (고도 +1). 네 건물의 1층 출입구가 나란히 이어진다.", "from": "biz_side", "to": "concert_front" },
         { "from": "concert_front", "to": "intl_front" },
-        { "from": "intl_front", "to": "econ_front" }
+        { "from": "intl_front", "to": "econ_front" },
+
+        { "//2": "건물 앞 길에서 공터·운동장으로 내려가는 길. 계단이 아니라 완만한 경사 도로다. 이게 없으면 모든 경로가 경영관 쪽 계단 하나로만 몰린다.",
+          "from": "concert_front", "to": "center" },
+        { "from": "concert_front", "to": "art_side" },
+        { "from": "intl_front", "to": "field_se" },
+        { "from": "econ_front", "to": "welfare_way" }
       ],
       "buildingLinks": [
         { "node": "welfare_way", "building": "종합복지관", "floor": 4 },
@@ -363,7 +369,8 @@
       ],
       "//edges": "북악관 1층과 네 건물 5층이 같은 높이라 이 길은 평지다. 중간에 계단이 있다면 steps 를 넣어야 한다.",
       "edges": [
-        { "from": "bukak_front", "to": "econ_5f" },
+        { "//": "북악관 앞에서 경상관·국제관 양쪽으로 갈라진다. 한쪽으로만 이으면 모든 경로가 경상관을 돌아간다.", "from": "bukak_front", "to": "econ_5f" },
+        { "from": "bukak_front", "to": "intl_5f" },
         { "from": "econ_5f", "to": "intl_5f" },
         { "from": "intl_5f", "to": "concert_5f" },
         { "from": "concert_5f", "to": "biz_5f" }
