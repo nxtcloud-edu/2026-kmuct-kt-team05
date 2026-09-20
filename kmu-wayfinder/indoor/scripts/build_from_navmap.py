@@ -248,21 +248,49 @@ def prune_spurs(skel, gw, gh, forced: set[tuple[int, int]], min_len: int = 9):
 
 # ---------------------------------------------------------------- 골격 그래프
 def skeleton_graph(skel, gw, gh, forced: set[tuple[int, int]]):
-    """(노드집합, 엣지목록[(a,b,[셀경로])])"""
+    """(노드집합, 엣지목록[(a,b,[셀경로])])
+
+    분기점 판정은 8-이웃의 **연결된 묶음 수**로 한다.
+    단순히 이웃 개수(deg)로 판정하면 대각선 구간에서 deg==3 이 흔히 생겨
+    직선 복도가 수십 개 노드로 잘게 쪼개진다.
+      묶음 1개 -> 끝점,  2개 -> 통과,  3개 이상 -> 분기점
+    """
+    RING = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
+
     def nbrs(y, x):
         out = []
-        for dy in (-1, 0, 1):
-            for dx in (-1, 0, 1):
-                if dy == 0 and dx == 0:
-                    continue
-                ny, nx = y + dy, x + dx
-                if 0 <= ny < gh and 0 <= nx < gw and skel[ny][nx]:
-                    out.append((ny, nx))
+        for dy, dx in RING:
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < gh and 0 <= nx < gw and skel[ny][nx]:
+                out.append((ny, nx))
         return out
 
+    def groups(y, x) -> int:
+        ring = []
+        for dy, dx in RING:
+            ny, nx = y + dy, x + dx
+            ring.append(0 <= ny < gh and 0 <= nx < gw and skel[ny][nx])
+        if not any(ring):
+            return 0
+        if all(ring):
+            return 1
+        n = 0
+        for i in range(8):
+            if ring[i] and not ring[i - 1]:
+                n += 1
+        return n
+
     cells = [(y, x) for y in range(gh) for x in range(gw) if skel[y][x]]
-    deg = {c: len(nbrs(*c)) for c in cells}
-    nodes = {c for c in cells if deg[c] != 2} | (forced & set(cells))
+    nodes = set()
+    for c in cells:
+        g = groups(*c)
+        if g == 1 and len(nbrs(*c)) <= 1:
+            nodes.add(c)          # 끝점
+        elif g >= 3:
+            nodes.add(c)          # 분기점
+        elif g == 0:
+            nodes.add(c)          # 고립점
+    nodes |= (forced & set(cells))
     if not nodes and cells:
         nodes = {cells[0]}
 
@@ -272,23 +300,62 @@ def skeleton_graph(skel, gw, gh, forced: set[tuple[int, int]]):
         for start in nbrs(*n):
             if (n, start) in seen:
                 continue
-            path = [n, start]
             seen.add((n, start))
-            prev, cur = n, start
-            while cur not in nodes:
-                nxt = [c for c in nbrs(*cur) if c != prev]
-                if not nxt:
+            path = [n, start]
+            visited = {n, start}
+            cur = start
+            guard = 0
+            # 통과 셀(묶음 2개)이라도 8-이웃 개수가 3 이상일 수 있다(대각선 구간).
+            # 따라서 '이웃이 정확히 1개'를 요구하면 추적이 끊긴다.
+            # 이미 지난 셀을 제외한 후보 중 하나를 골라 계속 간다.
+            while cur not in nodes and guard < 5000:
+                cand = [c for c in nbrs(*cur) if c not in visited]
+                if not cand:
                     break
-                prev, cur = cur, nxt[0]
-                path.append(cur)
-            seen.add((cur, path[-2]))
+                if len(cand) > 1:
+                    # 직진 우선: 이전 진행 방향과 가장 비슷한 쪽
+                    py, px_ = path[-2]
+                    vy, vx = cur[0] - py, cur[1] - px_
+                    cand.sort(key=lambda c: -((c[0] - cur[0]) * vy
+                                              + (c[1] - cur[1]) * vx))
+                nxt = cand[0]
+                path.append(nxt)
+                visited.add(nxt)
+                cur = nxt
+                guard += 1
             if cur in nodes and cur != n and len(path) >= 2:
+                seen.add((cur, path[-2]))
                 edges.append((n, cur, path))
     return nodes, edges
 
 
+def simplify(pts: list[list[float]], tol: float = 2.5) -> list[list[float]]:
+    """Douglas-Peucker 폴리라인 단순화."""
+    if len(pts) < 3:
+        return pts
+    a, b = pts[0], pts[-1]
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    den = math.hypot(dx, dy)
+    worst, wi = -1.0, 0
+    for i in range(1, len(pts) - 1):
+        p = pts[i]
+        d = (abs(dy * (p[0] - a[0]) - dx * (p[1] - a[1])) / den) if den > 1e-9 \
+            else math.dist(p, a)
+        if d > worst:
+            worst, wi = d, i
+    if worst <= tol:
+        return [a, b]
+    return simplify(pts[:wi + 1], tol)[:-1] + simplify(pts[wi:], tol)
+
+
 # ---------------------------------------------------------------- 덩어리
-def blobs(grid, gw, gh, kind: str):
+def blobs(grid, gw, gh, kind: str, allowed: set[tuple[int, int]] | None = None):
+    """색 덩어리 검출.
+
+    allowed 가 주어지면 **중심이 그 집합 안에 있는 덩어리만** 반환한다.
+    지도 하단 범례(legend)의 색상 견본이 가장 큰 덩어리로 잡히는 문제를 막기 위해,
+    통행망 최대 연결요소에 속한 덩어리만 시설로 인정한다.
+    """
     seen = [[False] * gw for _ in range(gh)]
     out = []
     for y in range(gh):
@@ -308,10 +375,13 @@ def blobs(grid, gw, gh, kind: str):
                                 and grid[ny][nx] == kind:
                             seen[ny][nx] = True
                             q.append((ny, nx))
-            if len(comp) >= MIN_BLOB_CELLS:
-                cy = sum(c[0] for c in comp) / len(comp)
-                cx = sum(c[1] for c in comp) / len(comp)
-                out.append({"cy": cy, "cx": cx, "cells": len(comp)})
+            if len(comp) < MIN_BLOB_CELLS:
+                continue
+            if allowed is not None and not any(c in allowed for c in comp):
+                continue          # 범례 견본 등 통행망과 무관한 덩어리 제외
+            cy = sum(c[0] for c in comp) / len(comp)
+            cx = sum(c[1] for c in comp) / len(comp)
+            out.append({"cy": cy, "cx": cx, "cells": len(comp)})
     out.sort(key=lambda b: -b["cells"])
     return out
 
@@ -404,10 +474,7 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
     mask = close_mask(mask, gw, gh, 2)
     n_closed = sum(sum(r) for r in mask)
 
-    evb = blobs(grid, gw, gh, "elevator")
-    stb = blobs(grid, gw, gh, "stairs")
-    enb = blobs(grid, gw, gh, "entrance")
-    labels = nav_labels(pathlib.Path(fname).stem)
+    # 시설 덩어리/라벨은 통행망 최대 요소를 구한 뒤에 계산한다 (아래 참조)
 
     # 건물 폭으로 축척 산출
     xs = [x for y in range(gh) for x in range(gw) if grid[y][x] != "bg"]
@@ -445,6 +512,38 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
     comps_sk = skel_components(skel)
     main_cells = comps_sk[0] if comps_sk else []
     n_main = len(main_cells)
+
+    # 통행망 최대 연결요소(닫힘 마스크 기준) — 시설 덩어리 필터에 쓴다.
+    # 지도 하단 범례의 색상 견본이 통행망과 떨어져 있으므로 이걸로 걸러진다.
+    def mask_components():
+        seen = [[False] * gw for _ in range(gh)]
+        best: list[tuple[int, int]] = []
+        for y in range(gh):
+            for x in range(gw):
+                if not mask[y][x] or seen[y][x]:
+                    continue
+                q, comp = [(y, x)], []
+                seen[y][x] = True
+                while q:
+                    cy, cx = q.pop()
+                    comp.append((cy, cx))
+                    for dy in (-1, 0, 1):
+                        for dx in (-1, 0, 1):
+                            ny, nx = cy + dy, cx + dx
+                            if 0 <= ny < gh and 0 <= nx < gw and mask[ny][nx] \
+                                    and not seen[ny][nx]:
+                                seen[ny][nx] = True
+                                q.append((ny, nx))
+                if len(comp) > len(best):
+                    best = comp
+        return set(best)
+
+    main_walk = mask_components()
+
+    evb = blobs(grid, gw, gh, "elevator", main_walk)
+    stb = blobs(grid, gw, gh, "stairs", main_walk)
+    enb = blobs(grid, gw, gh, "entrance", main_walk)
+    labels = nav_labels(pathlib.Path(fname).stem)
 
     # 앵커(문/시설) 부착점: 최대 골격 요소 중 가장 가까운 셀
     skel_cells = main_cells
@@ -542,9 +641,7 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
             continue
         geom = [[round(c[1] * CELL + CELL / 2, 1), round(c[0] * CELL + CELL / 2, 1)]
                 for c in path]
-        # 폴리라인 단순화 (3셀마다)
-        if len(geom) > 4:
-            geom = geom[::3] + [geom[-1]]
+        geom = simplify(geom, 3.0)
         L = sum(math.dist(geom[k], geom[k + 1]) for k in range(len(geom) - 1)) * m_per_px
         if L < 0.05:
             continue

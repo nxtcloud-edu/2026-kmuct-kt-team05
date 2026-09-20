@@ -52,6 +52,12 @@
   .iconbtn:active{transform:scale(.94)}
   .iconbtn.rec{background:var(--err); border-color:var(--err); animation:pulse 1.1s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  #vhint{
+    display:none; margin-top:7px; padding:8px 12px; border-radius:11px;
+    background:rgba(239,68,68,.14); border:1px solid rgba(239,68,68,.4);
+    color:#fca5a5; font-size:12.5px; font-weight:600;
+  }
+  #vhint.on{display:block}
   #chips{display:flex; gap:7px; overflow-x:auto; margin-top:9px; padding-bottom:2px;
          scrollbar-width:none}
   #chips::-webkit-scrollbar{display:none}
@@ -199,6 +205,7 @@
     <input id="q" placeholder="예: 계단 없이 338호" autocomplete="off" enterkeyhint="search">
     <button class="iconbtn" id="mic" aria-label="음성 입력">🎤</button>
   </div>
+  <div id="vhint" aria-live="polite"></div>
   <div id="chips">
     <span class="chip" data-ex="338호까지 가장 빠르게">338호</span>
     <span class="chip" data-ex="계단 없이 449호까지 가고 싶어">계단 없이 449호</span>
@@ -610,6 +617,13 @@ window.doneStep=i=>{
 };
 
 /* ================= 음성 / 텍스트 ================= */
+// 음성 인식 지속시간 설정
+const VOICE = {
+  MAX_MS: 30000,      // 최대 녹음 시간 (이후 자동 종료)
+  SILENCE_MS: 4500,   // 마지막 발화 후 이 시간 무음이면 종료
+  AUTO_RESTART: true, // 브라우저가 임의로 끊으면 시간 안에서 재시작
+};
+
 async function ask(){
   const text=$("#q").value.trim(); if(!text)return;
   const qs=new URLSearchParams({text,session:JSON.stringify(A.session),graph:A.graph});
@@ -638,27 +652,94 @@ document.querySelectorAll(".chip[data-ex]").forEach(c=>
   c.onclick=()=>{ $("#q").value=c.dataset.ex; ask(); });
 
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec=null;
+const V = {rec:null, t0:0, lastVoice:0, stopping:false,
+           timer:null, silence:null, finalText:"", interim:""};
+
+function voiceUI(on, msg){
+  const mic=$("#mic"), hint=$("#vhint");
+  mic.classList.toggle("rec", on);
+  mic.textContent = on ? "■" : "🎤";
+  hint.classList.toggle("on", on || !!msg);
+  hint.textContent = msg || "";
+}
+function tick(){
+  const left=Math.max(0, VOICE.MAX_MS-(Date.now()-V.t0));
+  const sil=Math.max(0, VOICE.SILENCE_MS-(Date.now()-V.lastVoice));
+  voiceUI(true, `듣고 있습니다… ${Math.ceil(left/1000)}초 남음`+
+                (sil<VOICE.SILENCE_MS-400?`  ·  ${Math.ceil(sil/1000)}초 뒤 자동 종료`:"")+
+                `   (탭하면 바로 종료)`);
+}
+function stopVoice(submit){
+  if(V.stopping) return;
+  V.stopping = true;
+  clearInterval(V.timer); V.timer=null;
+  if(V.rec){ try{ V.rec.onend=null; V.rec.stop(); }catch(e){} }
+  V.rec=null;
+  voiceUI(false, "");
+  const t=($("#q").value||"").trim();
+  if(submit && t) ask();
+}
+function startRec(){
+  const rec=new SR();
+  rec.lang="ko-KR"; rec.interimResults=true; rec.continuous=true;
+  if("maxAlternatives" in rec) rec.maxAlternatives=1;
+  rec.onresult=ev=>{
+    V.lastVoice=Date.now();
+    let fin=V.finalText, int="";
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const r=ev.results[i];
+      if(r.isFinal) fin += r[0].transcript;
+      else int += r[0].transcript;
+    }
+    V.finalText=fin; V.interim=int;
+    $("#q").value=(fin+int).trim();
+  };
+  rec.onspeechstart=()=>{ V.lastVoice=Date.now(); };
+  rec.onspeechend=()=>{ V.lastVoice=Date.now(); };
+  rec.onerror=ev=>{
+    if(ev.error==="no-speech"){ V.lastVoice=Date.now(); return; }  // 무음은 무시
+    if(ev.error==="aborted") return;
+    stopVoice(false);
+    render({status:"needs_clarification",
+      reasons:[`음성 인식 실패: ${ev.error}`,
+               "텍스트 입력이나 아래 목록 선택으로 진행하세요."]});
+    sheetState("expanded");
+  };
+  rec.onend=()=>{
+    // 브라우저가 임의로 끊은 경우: 제한 시간 안이면 이어서 재시작
+    if(V.stopping) return;
+    const within = Date.now()-V.t0 < VOICE.MAX_MS;
+    const quiet  = Date.now()-V.lastVoice > VOICE.SILENCE_MS;
+    if(VOICE.AUTO_RESTART && within && !quiet){
+      try{ V.rec=startRec(); return; }catch(e){}
+    }
+    stopVoice(true);
+  };
+  rec.start();
+  return rec;
+}
 $("#mic").onclick=()=>{
+  if(V.rec){ stopVoice(true); return; }
   if(!SR){
     render({status:"needs_clarification",
       reasons:["이 브라우저는 음성 인식을 지원하지 않습니다.",
                "Chrome 또는 Edge 에서 열거나, 텍스트/목록으로 선택해 주세요."]});
     sheetState("expanded"); return;
   }
-  if(rec){rec.stop();return;}
-  rec=new SR(); rec.lang="ko-KR"; rec.interimResults=true; rec.continuous=false;
-  $("#mic").classList.add("rec"); $("#mic").textContent="■";
-  rec.onresult=ev=>{ let t=""; for(const x of ev.results) t+=x[0].transcript;
-                     $("#q").value=t; };
-  rec.onerror=ev=>{
-    render({status:"needs_clarification",
-      reasons:[`음성 인식 실패: ${ev.error}`,"텍스트 입력이나 목록 선택으로 진행하세요."]});
-    sheetState("expanded");
-  };
-  rec.onend=()=>{ $("#mic").classList.remove("rec"); $("#mic").textContent="🎤";
-                  rec=null; if($("#q").value.trim()) ask(); };
-  rec.start();
+  V.stopping=false; V.finalText=""; V.interim="";
+  V.t0=Date.now(); V.lastVoice=Date.now();
+  $("#q").value="";
+  try{ V.rec=startRec(); }
+  catch(e){
+    render({status:"needs_clarification",reasons:["마이크를 열 수 없습니다: "+e.message]});
+    sheetState("expanded"); return;
+  }
+  voiceUI(true, "듣고 있습니다…");
+  V.timer=setInterval(()=>{
+    tick();
+    if(Date.now()-V.t0 > VOICE.MAX_MS) stopVoice(true);
+    else if(Date.now()-V.lastVoice > VOICE.SILENCE_MS) stopVoice(true);
+  },250);
 };
 
 window.addEventListener("resize",resize);
