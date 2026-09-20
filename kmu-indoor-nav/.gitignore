@@ -1,0 +1,19 @@
+# 생성물 (scripts/merge_graphs.py 로 재생성)
+data/published/campus_v1.json
+
+# 실외 프로토타입 생성물 (fetch_osm.py / build_graph.py 로 재생성)
+data/raw_osm.json
+data/graph.json
+data/graph.geojson
+data/routes.geojson
+
+# 국민대 공식 도면 원본. 이용 조건(usage_terms)이 확인되지 않아 커밋하지 않는다.
+data/raw/floorplans/
+
+# 팀원 그래프 복사본. 통합 저장소에서는 저장소 루트 data/ 를 직접 읽는다.
+data/external/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log

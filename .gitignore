@@ -1,0 +1,27 @@
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+
+# 환경변수 — .env.example 만 커밋한다
+.env*.local
+.env
+
+# 에디터 / OS
+.DS_Store
+Thumbs.db
+*.tsbuildinfo
+.vscode/*
+!.vscode/extensions.json
+
+# 로그
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vercel
+.vercel
+
+# 로컬 dev 서버 로그
+dev*.log

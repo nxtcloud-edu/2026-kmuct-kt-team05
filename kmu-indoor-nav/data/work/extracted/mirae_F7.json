@@ -1,0 +1,286 @@
+{
+  "floor_id": "mirae/F7",
+  "source": "Mirae_7F.png",
+  "doors": [
+    {
+      "x0": 534,
+      "x1": 537,
+      "cx": 535.5,
+      "width_m": 0.4,
+      "wall_y": 333,
+      "side": "up",
+      "band": "north",
+      "corridor_y": 348,
+      "room": null
+    },
+    {
+      "x0": 540,
+      "x1": 545,
+      "cx": 542.5,
+      "width_m": 0.6,
+      "wall_y": 333,
+      "side": "up",
+      "band": "north",
+      "corridor_y": 348,
+      "room": null
+    },
+    {
+      "x0": 661,
+      "x1": 665,
+      "cx": 663.0,
+      "width_m": 0.5,
+      "wall_y": 333,
+      "side": "up",
+      "band": "north",
+      "corridor_y": 348,
+      "room": null
+    },
+    {
+      "x0": 670,
+      "x1": 684,
+      "cx": 677.0,
+      "width_m": 1.51,
+      "wall_y": 333,
+      "side": "up",
+      "band": "north",
+      "corridor_y": 348,
+      "room": "730"
+    },
+    {
+      "x0": 769,
+      "x1": 784,
+      "cx": 776.5,
+      "width_m": 1.61,
+      "wall_y": 333,
+      "side": "up",
+      "band": "north",
+      "corridor_y": 348,
+      "room": "730"
+    },
+    {
+      "x0": 835,
+      "x1": 839,
+      "cx": 837.0,
+      "width_m": 0.5,
+      "wall_y": 333,
+      "side": "up",
+      "band": "north",
+      "corridor_y": 348,
+      "room": "729"
+    },
+    {
+      "x0": 843,
+      "x1": 852,
+      "cx": 847.5,
+      "width_m": 1.01,
+      "wall_y": 333,
+      "side": "up",
+      "band": "north",
+      "corridor_y": 348,
+      "room": "728-2"
+    },
+    {
+      "x0": 390,
+      "x1": 394,
+      "cx": 392.0,
+      "width_m": 0.5,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": "706"
+    },
+    {
+      "x0": 502,
+      "x1": 507,
+      "cx": 504.5,
+      "width_m": 0.6,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": null
+    },
+    {
+      "x0": 518,
+      "x1": 529,
+      "cx": 523.5,
+      "width_m": 1.21,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": "705"
+    },
+    {
+      "x0": 779,
+      "x1": 782,
+      "cx": 780.5,
+      "width_m": 0.4,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": null
+    },
+    {
+      "x0": 838,
+      "x1": 841,
+      "cx": 839.5,
+      "width_m": 0.4,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": null
+    },
+    {
+      "x0": 955,
+      "x1": 965,
+      "cx": 960.0,
+      "width_m": 1.11,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": "712"
+    },
+    {
+      "x0": 974,
+      "x1": 983,
+      "cx": 978.5,
+      "width_m": 1.01,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": null
+    },
+    {
+      "x0": 988,
+      "x1": 999,
+      "cx": 993.5,
+      "width_m": 1.21,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": "715"
+    },
+    {
+      "x0": 1113,
+      "x1": 1116,
+      "cx": 1114.5,
+      "width_m": 0.4,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": null
+    },
+    {
+      "x0": 1171,
+      "x1": 1175,
+      "cx": 1173.0,
+      "width_m": 0.5,
+      "wall_y": 361,
+      "side": "down",
+      "band": "middle_n",
+      "corridor_y": 348,
+      "room": null
+    },
+    {
+      "x0": 302,
+      "x1": 305,
+      "cx": 303.5,
+      "width_m": 0.4,
+      "wall_y": 592,
+      "side": "down",
+      "band": "south",
+      "corridor_y": 576,
+      "room": null
+    },
+    {
+      "x0": 307,
+      "x1": 310,
+      "cx": 308.5,
+      "width_m": 0.4,
+      "wall_y": 592,
+      "side": "down",
+      "band": "south",
+      "corridor_y": 576,
+      "room": null
+    },
+    {
+      "x0": 329,
+      "x1": 335,
+      "cx": 332.0,
+      "width_m": 0.71,
+      "wall_y": 592,
+      "side": "down",
+      "band": "south",
+      "corridor_y": 576,
+      "room": null
+    },
+    {
+      "x0": 340,
+      "x1": 355,
+      "cx": 347.5,
+      "width_m": 1.61,
+      "wall_y": 592,
+      "side": "down",
+      "band": "south",
+      "corridor_y": 576,
+      "room": null
+    },
+    {
+      "x0": 358,
+      "x1": 364,
+      "cx": 361.0,
+      "width_m": 0.71,
+      "wall_y": 592,
+      "side": "down",
+      "band": "south",
+      "corridor_y": 576,
+      "room": null
+    },
+    {
+      "x0": 525,
+      "x1": 529,
+      "cx": 527.0,
+      "width_m": 0.5,
+      "wall_y": 592,
+      "side": "down",
+      "band": "south",
+      "corridor_y": 576,
+      "room": "703"
+    },
+    {
+      "x0": 614,
+      "x1": 617,
+      "cx": 615.5,
+      "width_m": 0.4,
+      "wall_y": 592,
+      "side": "down",
+      "band": "south",
+      "corridor_y": 576,
+      "room": "703"
+    }
+  ],
+  "cross_passages": [
+    273.5,
+    407.5,
+    512.0
+  ],
+  "corridors": {
+    "348": [
+      336,
+      360
+    ],
+    "576": [
+      561,
+      591
+    ]
+  },
+  "label_count": 29
+}

@@ -1,0 +1,246 @@
+{
+  "note": "시안 좌표계 <- 원본 도면 좌표계 변환. 시안은 단순화 재렌더링이라 완전 일치하지 않는다.",
+  "registration": {
+    "mirae/F3": {
+      "nav_image": "nav_3F.png",
+      "orig_image": "Mirae_3F.png",
+      "nav_size": [
+        1672,
+        941
+      ],
+      "transform": {
+        "sx": 1.258013,
+        "sy": 1.384615,
+        "tx": -262.503,
+        "ty": -163.692,
+        "orig_bbox": [
+          250,
+          150,
+          1498,
+          774
+        ],
+        "nav_bbox": [
+          52,
+          44,
+          1622,
+          908
+        ]
+      },
+      "validation": {
+        "samples": 56,
+        "on_walkable": 31,
+        "ratio": 0.554,
+        "detail": {
+          "walk": 31,
+          "miss": 25
+        }
+      }
+    },
+    "mirae/F4": {
+      "nav_image": "nav_4F.png",
+      "orig_image": "Mirae_4F.png",
+      "nav_size": [
+        1672,
+        941
+      ],
+      "transform": {
+        "sx": 1.266026,
+        "sy": 1.384615,
+        "tx": -278.506,
+        "ty": -175.692,
+        "orig_bbox": [
+          250,
+          150,
+          1498,
+          774
+        ],
+        "nav_bbox": [
+          38,
+          32,
+          1618,
+          896
+        ]
+      },
+      "validation": {
+        "samples": 34,
+        "on_walkable": 22,
+        "ratio": 0.647,
+        "detail": {
+          "walk": 22,
+          "miss": 12
+        }
+      }
+    },
+    "mirae/F5": {
+      "nav_image": "nav_5F.png",
+      "orig_image": "Mirae_5F.png",
+      "nav_size": [
+        1672,
+        941
+      ],
+      "transform": {
+        "sx": 1.277244,
+        "sy": 1.413907,
+        "tx": -275.311,
+        "ty": -166.086,
+        "orig_bbox": [
+          250,
+          150,
+          1498,
+          754
+        ],
+        "nav_bbox": [
+          44,
+          46,
+          1638,
+          900
+        ]
+      },
+      "validation": {
+        "samples": 18,
+        "on_walkable": 7,
+        "ratio": 0.389,
+        "detail": {
+          "miss": 11,
+          "walk": 7
+        }
+      }
+    },
+    "mirae/F6": {
+      "nav_image": "nav_6F.png",
+      "orig_image": "Mirae_6F.png",
+      "nav_size": [
+        1672,
+        941
+      ],
+      "transform": {
+        "sx": 1.25641,
+        "sy": 1.472414,
+        "tx": -250.103,
+        "ty": -172.862,
+        "orig_bbox": [
+          250,
+          150,
+          1498,
+          730
+        ],
+        "nav_bbox": [
+          64,
+          48,
+          1632,
+          902
+        ]
+      },
+      "validation": {
+        "samples": 24,
+        "on_walkable": 2,
+        "ratio": 0.083,
+        "detail": {
+          "miss": 22,
+          "walk": 1,
+          "elevator": 1
+        }
+      }
+    },
+    "mirae/F7": {
+      "nav_image": "nav_7F.png",
+      "orig_image": "Mirae_7F.png",
+      "nav_size": [
+        1672,
+        941
+      ],
+      "transform": {
+        "sx": 1.3125,
+        "sy": 1.689243,
+        "tx": -304.25,
+        "ty": -379.689,
+        "orig_bbox": [
+          276,
+          252,
+          1460,
+          754
+        ],
+        "nav_bbox": [
+          58,
+          46,
+          1612,
+          894
+        ]
+      },
+      "validation": {
+        "samples": 26,
+        "on_walkable": 4,
+        "ratio": 0.154,
+        "detail": {
+          "miss": 22,
+          "walk": 3,
+          "stairs": 1
+        }
+      }
+    },
+    "mirae/DRAWING-2F": {
+      "nav_image": "nav_2F.png",
+      "orig_image": "Mirae_B2_2.png",
+      "nav_size": [
+        1672,
+        941
+      ],
+      "transform": {
+        "sx": 1.245192,
+        "sy": 1.333333,
+        "tx": -239.298,
+        "ty": -170.0,
+        "orig_bbox": [
+          250,
+          150,
+          1498,
+          798
+        ],
+        "nav_bbox": [
+          72,
+          30,
+          1626,
+          894
+        ]
+      },
+      "validation": {
+        "samples": 3,
+        "on_walkable": 0,
+        "ratio": 0.0,
+        "detail": {
+          "miss": 3
+        }
+      }
+    },
+    "mirae/DRAWING-1F": {
+      "nav_image": "nav_1F.png",
+      "orig_image": "Mirae_B2_1.png",
+      "nav_size": [
+        1672,
+        941
+      ],
+      "transform": {
+        "sx": 1.267628,
+        "sy": 1.358025,
+        "tx": -268.907,
+        "ty": -179.704,
+        "orig_bbox": [
+          250,
+          150,
+          1498,
+          798
+        ],
+        "nav_bbox": [
+          48,
+          24,
+          1630,
+          904
+        ]
+      },
+      "validation": {
+        "ratio": null,
+        "samples": 0
+      }
+    }
+  }
+}

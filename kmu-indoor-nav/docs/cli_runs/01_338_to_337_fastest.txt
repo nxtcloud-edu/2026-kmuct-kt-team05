@@ -1,0 +1,51 @@
+============================================================================
+graph_version : mirae-indoor-v1
+schema_version: 1.0.0
+source        : C:\Users\User\campus-nav\data\published\mirae_indoor_v1.json
+검증 수준     : 공개 도면 판독(drawing_read) 까지. 현장 실측 없음.
+현장 검증     : False
+휠체어 인증   : False
+실외 연결     : 없음 - 확인된 외부 지점이 없어 미등록
+층간 연결     : 없음 - 확정된 계단 출입문/승강기 근거 없음
+데이터 경고   : 3건
+  - plan mirae/plan/3F: 층 매핑 미확정(pending_review) web='3층' drawing='지상 3층'
+  - plan mirae/plan/B2_2: 축척 unknown -> 이 층의 거리/ETA 를 숫자로 제공하지 말 것
+  - plan mirae/plan/B2_2: 층 매핑 미확정(source_label_conflict) web='지하 2층-②' drawing='지상 2층'
+============================================================================
+
+요청: 338 -> 337   (mirae/F3/door/338-W -> mirae/F3/door/337-W)
+
+상태: ok
+policy_version: policy-2026.09.20-01   objective=fastest   profile=normal
+적용 제약: {"no_stairs": false, "wheelchair": false, "max_slope_up_pct": null, "max_slope_down_pct": null, "min_clear_width_m": null, "max_threshold_m": null, "required_accessibility_fields": []}
+
+지표 (항목 분리)
+  보행거리          : 20.5 m
+  추정 소요시간     : 21.4 s  (가정값=True)
+  실외 이동거리     : 0.0 m
+  계단 구간 수      : 0
+  계단 실제 단수    : None  (단수 미상 구간 0개)
+  엘리베이터 탑승   : 0 회
+  관측 기반 최대경사: None
+  추정 기반 최대경사: None
+  미검증 구간 수    : 0
+  경유 층           : ['mirae/F3']
+  전층 축척 검증    : True
+
+세그먼트 (6개)
+   1. [door          ] mirae/F3/door/338-W -> mirae/F3/cj/338-W  4.0s  space=plan:mirae/F3
+   2. [corridor      ] mirae/F3/cj/338-W -> mirae/F3/cj/338-E  7.4s  space=plan:mirae/F3
+   3. [corridor      ] mirae/F3/cj/338-E -> mirae/F3/cj/wc-W  1.0s  space=plan:mirae/F3
+   4. [corridor      ] mirae/F3/cj/wc-W -> mirae/F3/cj/wc-E  3.8s  space=plan:mirae/F3
+   5. [corridor      ] mirae/F3/cj/wc-E -> mirae/F3/cj/337-W  1.1s  space=plan:mirae/F3
+   6. [door          ] mirae/F3/cj/337-W -> mirae/F3/door/337-W  4.0s  space=plan:mirae/F3
+
+단계 안내
+   1. (3층) 338호 서측 문 앞 복도 문을 통과
+      -> 문을 지났으면 다음을 누르세요.
+   2. (3층) 약 10 m 이동: 338호 서측 문 앞 복도 → 338호 동측 문 앞 복도
+   3. (3층) 약 1 m 이동: 338호 동측 문 앞 복도 → 화장실 서측 출입부 앞
+   4. (3층) 약 5 m 이동: 화장실 서측 출입부 앞 → 화장실 동측 출입부 앞
+   5. (3층) 약 1 m 이동: 화장실 동측 출입부 앞 → 337호 서측 문 앞 복도
+   6. (3층) 337호 서측 문 문을 통과
+      -> 문을 지났으면 다음을 누르세요.
