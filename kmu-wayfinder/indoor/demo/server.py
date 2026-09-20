@@ -33,16 +33,20 @@ from backend.app.intent.parse import parse, session_from  # noqa: E402
 from backend.app.routing.engine import route              # noqa: E402
 from backend.app.routing.policy import Constraints        # noqa: E402
 
-# 두 그래프를 동시에 로드하고 ?graph= 로 선택한다.
-#   published : data/published/mirae_indoor_v1.json   (가정값 없음)
-#   demo      : data/demo/mirae_demo_v1.json          (가정 승강기 포함)
+# 여러 그래프를 동시에 로드하고 ?graph= 로 선택한다.
+#   nav       : 내비게이션맵 시안 기반 (8개 층, 화면과 좌표 일치)  <- 기본
+#   full      : 원본 도면 자동추출 (2~7층)
+#   published : 도면 판독 근거만 (3층 338/337 + 2층 202)
 GRAPHS_SPEC = {
+    "nav": ROOT / "data" / "demo" / "mirae_nav_v1.json",
     "full": ROOT / "data" / "demo" / "mirae_full_v1.json",
-    "demo": ROOT / "data" / "demo" / "mirae_demo_v1.json",
     "published": ROOT / "data" / "published" / "mirae_indoor_v1.json",
 }
-DEFAULT_GRAPH = os.environ.get("NAV_GRAPH_KEY", "full")
-PLANS = ROOT / "data" / "raw" / "floorplans"
+DEFAULT_GRAPH = os.environ.get("NAV_GRAPH_KEY", "nav")
+PLAN_DIRS = [
+    ROOT / "data" / "raw" / "navmaps",
+    ROOT / "data" / "raw" / "floorplans",
+]
 HERE = pathlib.Path(__file__).resolve().parent
 
 GRAPHS: dict[str, Dataset] = {}
@@ -69,7 +73,7 @@ def pick(q: dict) -> tuple[str, Dataset]:
     return k, GRAPHS[k]
 
 
-def places_payload(DS: Dataset) -> dict:
+def places_payload(DS: Dataset, overlay: bool = False) -> dict:
     out = []
     for p in DS.places.values():
         f = DS.floors.get(p.floor_id)
@@ -101,17 +105,30 @@ def places_payload(DS: Dataset) -> dict:
             "drawing_floor_label": pl.drawing_floor_label if pl else None,
             "mapping_status": pl.mapping_status.value if pl else None,
         })
-    nodes = [{
+    # 그래프 오버레이는 용량이 커서 기본으로 보내지 않는다 (?overlay=1)
+    nodes, edges = [], []
+    if overlay:
+        nodes = [{
+            "id": n.id, "kind": n.kind.value, "floor_id": n.floor_id,
+            "name": n.name,
+            "x": n.plan_point.x_px if n.plan_point else None,
+            "y": n.plan_point.y_px if n.plan_point else None,
+        } for n in DS.nodes.values() if n.plan_point]
+        edges = [{
+            "id": e.id, "kind": e.kind.value,
+            "from_node": e.from_node, "to_node": e.to_node,
+            "geometry": e.geometry,
+        } for e in DS.edges if not e.id.endswith("/rev")]
+    facilities = [{
         "id": n.id, "kind": n.kind.value, "floor_id": n.floor_id,
         "name": n.name,
         "x": n.plan_point.x_px if n.plan_point else None,
         "y": n.plan_point.y_px if n.plan_point else None,
-    } for n in DS.nodes.values() if n.plan_point]
-    edges = [{
-        "id": e.id, "kind": e.kind.value,
-        "from_node": e.from_node, "to_node": e.to_node,
-    } for e in DS.edges if not e.id.endswith("/rev")]
-    return {"places": out, "floors": floors, "nodes": nodes, "edges": edges}
+    } for n in DS.nodes.values()
+        if n.plan_point and n.kind.value in
+        ("elevator_lobby", "stair_landing", "entrance_inside", "entrance_outside")]
+    return {"places": out, "floors": floors, "nodes": nodes, "edges": edges,
+            "facilities": facilities}
 
 
 def resolve_place(DS: Dataset, q: str) -> tuple[str | None, list[dict]]:
@@ -153,12 +170,12 @@ class H(BaseHTTPRequestHandler):
 
         if u.path.startswith("/plan/"):
             name = pathlib.PurePosixPath(u.path).name
-            f = PLANS / name
-            # 경로 탈출 방지
-            if not f.is_file() or f.parent.resolve() != PLANS.resolve():
-                self._json({"error": "not found"}, 404)
-                return
-            self._send(200, f.read_bytes(), "image/png")
+            for d in PLAN_DIRS:
+                f = d / name
+                if f.is_file() and f.parent.resolve() == d.resolve():
+                    self._send(200, f.read_bytes(), "image/png")
+                    return
+            self._json({"error": "not found"}, 404)
             return
 
         if u.path == "/api/status":
@@ -178,7 +195,8 @@ class H(BaseHTTPRequestHandler):
 
         if u.path == "/api/places":
             key, DS = pick(q)
-            self._json({"graph_key": key, **places_payload(DS)})
+            ov = one("overlay", "0") in ("1", "true", "True")
+            self._json({"graph_key": key, **places_payload(DS, ov)})
             return
 
         if u.path == "/api/intent":

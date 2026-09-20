@@ -2,450 +2,667 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>미래관 AI 캠퍼스 내비 (데모)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>미래관 길찾기</title>
 <style>
-  :root{--bg:#0f1319;--pan:#161b22;--fg:#e6edf3;--mut:#8b949e;--line:#2b313a;
-        --acc:#4da3ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;}
-  *{box-sizing:border-box}
-  body{margin:0;font:14px/1.55 "Malgun Gothic",system-ui,sans-serif;
-       background:var(--bg);color:var(--fg);display:flex;height:100vh;overflow:hidden}
-  #left{width:390px;min-width:390px;display:flex;flex-direction:column;
-        border-right:1px solid var(--line);background:var(--pan)}
-  #scroll{overflow-y:auto;padding:14px}
-  #right{flex:1;position:relative;background:#080a0d}
-  canvas{position:absolute;inset:0}
-  h1{font-size:16px;margin:0 0 2px}
-  h2{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);
-     margin:16px 0 7px;border-bottom:1px solid var(--line);padding-bottom:5px}
-  label{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px}
-  select,input,button,textarea{width:100%;background:#0d1117;color:var(--fg);
-    border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit}
-  button{cursor:pointer;background:#21262d}
-  button:hover{background:#2d333b}
-  button.primary{background:var(--acc);color:#04121f;font-weight:700;border-color:var(--acc)}
-  button.mic{background:#2d1f3d;border-color:#5a3d7a}
-  button.mic.rec{background:var(--err);border-color:var(--err);color:#fff}
-  .row{display:flex;gap:8px}.row>*{flex:1}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-  .chip{padding:5px 10px;border:1px solid var(--line);border-radius:20px;
-        font-size:12px;cursor:pointer;background:#0d1117;user-select:none}
-  .chip[aria-pressed="true"]{background:var(--acc);color:#04121f;
-        border-color:var(--acc);font-weight:700}
-  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;
-         font-weight:700;margin-right:5px}
-  .b-ok{background:#12351d;color:var(--ok);border:1px solid #1f6f33}
-  .b-warn{background:#3a2d0c;color:var(--warn);border:1px solid #7a5c14}
-  .b-err{background:#3d1416;color:var(--err);border:1px solid #8b2c2f}
-  .b-mut{background:#1c2128;color:var(--mut);border:1px solid var(--line)}
-  #result{margin-top:10px}
-  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
-  td{padding:3px 5px;border-bottom:1px solid var(--line);vertical-align:top}
-  td:first-child{color:var(--mut);width:46%}
-  ol{margin:8px 0 0;padding-left:20px;font-size:13px}
-  ol li{margin-bottom:7px}
-  .hint{font-size:11.5px;color:var(--mut);margin:5px 0}
-  .reason{font-size:12px;background:#0d1117;border:1px solid var(--line);
-          border-radius:6px;padding:8px;margin-top:7px;white-space:pre-wrap}
-  #hud{position:absolute;top:10px;left:10px;z-index:5;background:rgba(15,19,25,.92);
-       border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px}
-  #floortabs{position:absolute;top:10px;right:10px;z-index:5;display:flex;gap:6px}
-  #floortabs button{width:auto;padding:6px 12px;font-size:12px}
-  #floortabs button[aria-pressed="true"]{background:var(--acc);color:#04121f;font-weight:700}
-  .step-done{opacity:.45;text-decoration:line-through}
+  :root{
+    --bg:#0d1117; --sheet:#161b22; --fg:#e6edf3; --mut:#8b949e; --line:#2b313a;
+    --acc:#3b82f6; --acc2:#60a5fa; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+    --sheet-h: 46vh;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-t: env(safe-area-inset-top, 0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%; margin:0; overflow:hidden; overscroll-behavior:none}
+  body{
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Malgun Gothic",system-ui,sans-serif;
+    background:var(--bg); color:var(--fg);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- 지도 ---------- */
+  #map{position:fixed; inset:0; background:#fff; touch-action:none}
+  #cv{position:absolute; inset:0; width:100%; height:100%}
+
+  /* ---------- 상단 검색바 ---------- */
+  #top{
+    position:fixed; left:0; right:0; top:0; z-index:30;
+    padding:calc(var(--safe-t) + 10px) 10px 10px;
+    background:linear-gradient(180deg,rgba(13,17,23,.96) 60%,rgba(13,17,23,0));
+    pointer-events:none;
+  }
+  #top > *{pointer-events:auto}
+  #searchbar{
+    display:flex; gap:8px; align-items:center;
+    background:var(--sheet); border:1px solid var(--line); border-radius:14px;
+    padding:6px 6px 6px 14px; box-shadow:0 6px 24px rgba(0,0,0,.45);
+  }
+  #q{
+    flex:1; min-width:0; background:transparent; border:0; outline:0;
+    color:var(--fg); font-size:16px; padding:10px 0;
+  }
+  #q::placeholder{color:var(--mut)}
+  .iconbtn{
+    flex:0 0 auto; width:42px; height:42px; border-radius:11px;
+    border:1px solid var(--line); background:#1f242c; color:var(--fg);
+    font-size:19px; display:grid; place-items:center; cursor:pointer;
+  }
+  .iconbtn:active{transform:scale(.94)}
+  .iconbtn.rec{background:var(--err); border-color:var(--err); animation:pulse 1.1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  #chips{display:flex; gap:7px; overflow-x:auto; margin-top:9px; padding-bottom:2px;
+         scrollbar-width:none}
+  #chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto; padding:8px 13px; border-radius:20px; font-size:13px;
+    background:rgba(22,27,34,.95); border:1px solid var(--line); color:var(--fg);
+    white-space:nowrap; cursor:pointer;
+  }
+  .chip[aria-pressed="true"]{background:var(--acc); border-color:var(--acc); color:#fff; font-weight:700}
+
+  /* ---------- 층 선택 (오른쪽 세로) ---------- */
+  #floors{
+    position:fixed; right:10px; z-index:25;
+    top:50%; transform:translateY(-50%);
+    display:flex; flex-direction:column; gap:5px;
+    background:rgba(22,27,34,.94); border:1px solid var(--line);
+    border-radius:13px; padding:6px; box-shadow:0 6px 20px rgba(0,0,0,.4);
+    max-height:52vh; overflow-y:auto; scrollbar-width:none;
+  }
+  #floors::-webkit-scrollbar{display:none}
+  #floors button{
+    width:44px; height:38px; border-radius:9px; border:1px solid transparent;
+    background:transparent; color:var(--mut); font-size:13px; font-weight:700;
+    cursor:pointer;
+  }
+  #floors button[data-onroute="1"]{color:var(--acc2); border-color:var(--acc)}
+  #floors button[aria-pressed="true"]{background:var(--acc); color:#fff; border-color:var(--acc)}
+
+  /* ---------- 지도 컨트롤 ---------- */
+  #mapctl{
+    position:fixed; right:10px; z-index:25; bottom:calc(var(--sheet-h) + 16px);
+    display:flex; flex-direction:column; gap:6px;
+  }
+  #mapctl .iconbtn{width:44px; height:44px; background:rgba(22,27,34,.94);
+                   box-shadow:0 4px 14px rgba(0,0,0,.4)}
+
+  /* ---------- 하단 시트 ---------- */
+  #sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:40;
+    height:var(--sheet-h);
+    background:var(--sheet); border-top:1px solid var(--line);
+    border-radius:18px 18px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,.5);
+    display:flex; flex-direction:column;
+    transition:height .22s cubic-bezier(.4,0,.2,1);
+  }
+  #sheet.collapsed{height:calc(96px + var(--safe-b))}
+  #sheet.expanded{height:86vh}
+  #grab{padding:9px 0 5px; display:grid; place-items:center; cursor:grab; flex:0 0 auto}
+  #grab i{display:block; width:42px; height:4px; border-radius:3px; background:#3d444d}
+  #sheetbody{flex:1; overflow-y:auto; padding:0 16px calc(16px + var(--safe-b));
+             -webkit-overflow-scrolling:touch}
+
+  /* ---------- 출발/도착 ---------- */
+  #od{display:flex; gap:9px; align-items:center; margin-bottom:11px}
+  #od .fields{flex:1; min-width:0; display:flex; flex-direction:column; gap:7px}
+  .field{
+    display:flex; align-items:center; gap:9px;
+    background:#0d1117; border:1px solid var(--line); border-radius:11px;
+    padding:9px 11px;
+  }
+  .field .dot{width:9px; height:9px; border-radius:50%; flex:0 0 auto}
+  .field .dot.a{background:var(--ok)} .field .dot.b{background:var(--err)}
+  .field select{
+    flex:1; min-width:0; background:transparent; border:0; outline:0;
+    color:var(--fg); font-size:15px; appearance:none; cursor:pointer;
+  }
+  #swap{width:40px; height:40px; flex:0 0 auto}
+
+  /* ---------- 조건 ---------- */
+  .label{font-size:12px; color:var(--mut); margin:12px 0 6px; font-weight:600}
+  .opts{display:flex; gap:7px; flex-wrap:wrap}
+  .opt{
+    padding:9px 14px; border-radius:11px; font-size:14px;
+    background:#0d1117; border:1px solid var(--line); color:var(--fg); cursor:pointer;
+  }
+  .opt[aria-pressed="true"]{background:var(--acc); border-color:var(--acc); color:#fff; font-weight:700}
+
+  #go{
+    width:100%; margin-top:14px; padding:15px; border-radius:13px; border:0;
+    background:var(--acc); color:#fff; font-size:16px; font-weight:800; cursor:pointer;
+  }
+  #go:active{transform:scale(.99)}
+
+  /* ---------- 결과 ---------- */
+  #summary{display:none; gap:10px; align-items:baseline; margin:2px 0 4px}
+  #summary.on{display:flex}
+  #sumTime{font-size:27px; font-weight:800; letter-spacing:-.5px}
+  #sumDist{font-size:15px; color:var(--mut)}
+  #sumBadges{display:flex; gap:5px; flex-wrap:wrap; margin:6px 0 2px}
+  .badge{padding:3px 9px; border-radius:8px; font-size:12px; font-weight:700}
+  .b-ok{background:rgba(34,197,94,.16); color:#4ade80}
+  .b-warn{background:rgba(245,158,11,.16); color:#fbbf24}
+  .b-err{background:rgba(239,68,68,.16); color:#f87171}
+  .b-mut{background:#21262d; color:var(--mut)}
+  .b-acc{background:rgba(59,130,246,.18); color:var(--acc2)}
+
+  #steps{list-style:none; margin:12px 0 0; padding:0}
+  #steps li{
+    display:flex; gap:11px; padding:11px 0; border-bottom:1px solid var(--line);
+  }
+  #steps li.done{opacity:.4}
+  #steps .ic{
+    flex:0 0 auto; width:34px; height:34px; border-radius:10px;
+    display:grid; place-items:center; font-size:16px; background:#21262d;
+  }
+  #steps .ic.ev{background:rgba(59,130,246,.2); color:var(--acc2)}
+  #steps .ic.st{background:rgba(245,158,11,.2); color:#fbbf24}
+  #steps .tx{flex:1; min-width:0}
+  #steps .fl{font-size:11px; color:var(--mut); font-weight:700}
+  #steps .dn{
+    margin-top:6px; padding:5px 12px; border-radius:8px; font-size:12px;
+    background:#21262d; border:1px solid var(--line); color:var(--fg); cursor:pointer;
+  }
+  #reason{
+    display:none; margin-top:11px; padding:12px; border-radius:11px;
+    background:#0d1117; border:1px solid var(--line);
+    font-size:13px; color:var(--mut); white-space:pre-wrap; line-height:1.6;
+  }
+  #reason.on{display:block}
+  #meta{margin-top:16px; font-size:11.5px; color:#6e7681; line-height:1.7}
+
+  /* ---------- 데스크톱 ---------- */
+  @media (min-width:820px){
+    :root{--sheet-h:100vh}
+    #sheet{
+      left:auto; right:0; top:0; bottom:0; width:400px; height:100vh !important;
+      border-radius:0; border-top:0; border-left:1px solid var(--line);
+    }
+    #sheet.collapsed,#sheet.expanded{height:100vh !important}
+    #grab{display:none}
+    #sheetbody{padding-top:14px}
+    #map{right:400px}
+    #top{right:400px}
+    #floors{right:414px}
+    #mapctl{right:414px; bottom:20px}
+  }
 </style>
 </head>
 <body>
-<div id="left">
-  <div id="scroll">
-    <h1>미래관 AI 캠퍼스 내비</h1>
-    <div id="status"><span class="badge b-mut">로딩…</span></div>
 
-    <h2>음성 / 텍스트로 요청</h2>
-    <div class="row">
-      <button id="mic" class="mic">🎤 음성 입력</button>
-      <button id="clear">초기화</button>
-    </div>
-    <input id="text" placeholder="예: 계단 없이 338호까지 가고 싶어">
-    <button id="ask" class="primary" style="margin-top:8px">요청 해석 + 경로 찾기</button>
-    <div class="chips">
-      <span class="chip" data-ex="338호까지 가장 빠르게">338호 빠르게</span>
-      <span class="chip" data-ex="계단 없이 338호까지 가고 싶어">계단 없이 338호</span>
-      <span class="chip" data-ex="휠체어를 타고 620호로 가고 싶어">휠체어 620호</span>
-      <span class="chip" data-ex="202호에서 730호까지 가장 빠르게">202→730 (2→7층)</span>
-      <span class="chip" data-ex="338호에서 449호까지">338→449 (3→4층)</span>
-    </div>
-    <div id="intent" class="hint"></div>
+<div id="map"><canvas id="cv"></canvas></div>
 
-    <h2>화면에서 직접 선택</h2>
-    <label>출발</label><select id="from"></select>
-    <label>목적지</label><select id="to"></select>
-    <label>이동 조건</label>
-    <div class="chips">
-      <span class="chip" id="cFast" data-obj="fastest" aria-pressed="true">빠르게</span>
-      <span class="chip" id="cIndoor" data-obj="indoor" aria-pressed="false">실내 위주</span>
-      <span class="chip" id="cComfort" data-obj="comfort" aria-pressed="false">편한 이동</span>
-    </div>
-    <div class="chips">
-      <span class="chip" id="cNoStairs" aria-pressed="false">계단 없이</span>
-      <span class="chip" id="cWheel" aria-pressed="false">휠체어 조건</span>
-    </div>
-    <button id="go" style="margin-top:9px">경로 검색</button>
-
-    <div id="result"></div>
-
-    <h2>데이터 상태</h2>
-    <div id="meta" class="hint"></div>
+<div id="top">
+  <div id="searchbar">
+    <input id="q" placeholder="예: 계단 없이 338호" autocomplete="off" enterkeyhint="search">
+    <button class="iconbtn" id="mic" aria-label="음성 입력">🎤</button>
+  </div>
+  <div id="chips">
+    <span class="chip" data-ex="338호까지 가장 빠르게">338호</span>
+    <span class="chip" data-ex="계단 없이 449호까지 가고 싶어">계단 없이 449호</span>
+    <span class="chip" data-ex="휠체어를 타고 620호로 가고 싶어">휠체어 620호</span>
+    <span class="chip" data-ex="202호에서 730호까지 가장 빠르게">202→730</span>
   </div>
 </div>
 
-<div id="right">
-  <div id="hud">도면을 불러오는 중…</div>
-  <div id="floortabs"></div>
-  <canvas id="cv"></canvas>
+<div id="floors"></div>
+
+<div id="mapctl">
+  <button class="iconbtn" id="zin" aria-label="확대">＋</button>
+  <button class="iconbtn" id="zout" aria-label="축소">－</button>
+  <button class="iconbtn" id="fit" aria-label="전체 보기">⤢</button>
+</div>
+
+<div id="sheet">
+  <div id="grab"><i></i></div>
+  <div id="sheetbody">
+
+    <div id="summary">
+      <span id="sumTime">–</span><span id="sumDist"></span>
+    </div>
+    <div id="sumBadges"></div>
+
+    <div id="od">
+      <div class="fields">
+        <div class="field"><span class="dot a"></span><select id="from"></select></div>
+        <div class="field"><span class="dot b"></span><select id="to"></select></div>
+      </div>
+      <button class="iconbtn" id="swap" aria-label="출발/도착 바꾸기">⇅</button>
+    </div>
+
+    <div class="label">이동 방식</div>
+    <div class="opts" id="objOpts">
+      <button class="opt" data-obj="fastest" aria-pressed="true">빠르게</button>
+      <button class="opt" data-obj="indoor" aria-pressed="false">실내 위주</button>
+      <button class="opt" data-obj="comfort" aria-pressed="false">편하게</button>
+    </div>
+
+    <div class="label">조건</div>
+    <div class="opts">
+      <button class="opt" id="oNoStairs" aria-pressed="false">계단 없이</button>
+      <button class="opt" id="oWheel" aria-pressed="false">♿ 휠체어</button>
+    </div>
+
+    <button id="go">길찾기</button>
+
+    <div id="reason"></div>
+    <ul id="steps"></ul>
+    <div id="meta"></div>
+  </div>
 </div>
 
 <script>
 "use strict";
 const $ = s => document.querySelector(s);
 const cv = $("#cv"), ctx = cv.getContext("2d");
+const DPR = Math.min(window.devicePixelRatio || 1, 2.5);
 
 const A = {
-  places:[], floors:[], nodes:[], edges:[],
-  floor:null, imgs:{}, route:null, session:{},
-  view:{k:1,tx:0,ty:0}, doneSteps:new Set(),
-  graph:"full",
+  graph:"nav", places:[], floors:[], facilities:[],
+  floor:null, imgs:{}, route:null, session:{}, done:new Set(),
+  view:{k:1,tx:0,ty:0}, minK:0.05, maxK:14,
 };
 
-// ------------------------------------------------ 로드
+/* ================= 데이터 로드 ================= */
 async function boot(){
   const st = await (await fetch(`/api/status?graph=${A.graph}`)).json();
   const vs = st.verification_scope || {};
-  $("#status").innerHTML =
-    `<span class="badge b-mut">${st.graph_version}</span>`+
-    `<span class="badge b-ok">${A.floors_n||""}층 · 호실 ${A.places_n||""}개</span>`+
-    `<span class="badge b-mut">승강기 ${st.elevators_registered}대</span>`;
-  $("#meta").innerHTML =
-    `데이터 근거: ${vs.evidence_level||"-"}<br>`+
-    `층간 이동: ${vs.vertical_connection||"-"}<br>`+
-    `실외 구간: ${vs.outdoor_connection||"-"}<br>`+
-    `도면: 국민대 공과대학 공식 평면도 (미래관 = S2)<br>`+
-    `축척: 0.1008 m/px (도면 치수선 산출)`;
-
-  const p = await (await fetch(`/api/places?graph=${A.graph}`)).json();
-  A.places=p.places; A.floors=p.floors; A.nodes=p.nodes; A.edges=p.edges;
-  A.imgs={}; A.route=null; $("#result").innerHTML="";
-  A.floors_n=A.floors.length; A.places_n=A.places.length;
-  $("#status").innerHTML =
-    `<span class="badge b-mut">${st.graph_version}</span>`+
-    `<span class="badge b-ok">${A.floors_n}개 층 · 호실 ${A.places_n}개</span>`+
-    `<span class="badge b-mut">승강기 ${st.elevators_registered}대</span>`;
-
-  // 층별 그룹으로 정렬해서 표시
-  const byFloor = {};
-  for(const x of A.places) (byFloor[x.floor_id] ||= []).push(x);
-  const floorOrder = [...A.floors].sort((a,b)=>b.sort_order-a.sort_order);
-  const optHtml = floorOrder.map(f=>{
-    const items=(byFloor[f.id]||[]).sort((a,b)=>
-      String(a.room_label).localeCompare(String(b.room_label)));
-    if(!items.length) return "";
-    return `<optgroup label="${f.label}">`+items.map(x=>
-      `<option value="${x.id}">${x.room_label}호</option>`).join("")+`</optgroup>`;
-  }).join("");
-  for(const sel of [$("#from"),$("#to")]) sel.innerHTML = optHtml;
-  $("#from").value = "mirae/DRAWING-2F/202";
-  $("#to").value   = "mirae/F3/338";
+  const p  = await (await fetch(`/api/places?graph=${A.graph}`)).json();
+  A.places=p.places; A.floors=p.floors; A.facilities=p.facilities||[];
 
   A.floors.sort((a,b)=>b.sort_order-a.sort_order);
-  $("#floortabs").innerHTML = A.floors.map(f=>
-    `<button data-f="${f.id}" aria-pressed="false">${f.label}</button>`).join("");
-  $("#floortabs").querySelectorAll("button").forEach(b=>
-    b.onclick = ()=> setFloor(b.dataset.f));
+  $("#floors").innerHTML = A.floors.map(f=>
+    `<button data-f="${f.id}">${f.label.replace("지하","B").replace("층","")}</button>`).join("");
+  $("#floors").querySelectorAll("button").forEach(b=>
+    b.onclick=()=>setFloor(b.dataset.f,true));
 
-  await setFloor("mirae/F3");
+  const byF={}; for(const x of A.places) (byF[x.floor_id] ||= []).push(x);
+  const opt = A.floors.map(f=>{
+    const it=(byF[f.id]||[]).sort((a,b)=>String(a.room_label).localeCompare(String(b.room_label)));
+    return it.length ? `<optgroup label="${f.label}">`+
+      it.map(x=>`<option value="${x.id}">${x.room_label}호 · ${f.label}</option>`).join("")+
+      `</optgroup>` : "";
+  }).join("");
+  $("#from").innerHTML=opt; $("#to").innerHTML=opt;
+  pick("#from", ["mirae/F2/202","mirae/F1/102"]);
+  pick("#to",   ["mirae/F3/338","mirae/F3/337"]);
+
+  $("#meta").innerHTML =
+    `${st.graph_version} · 층 ${A.floors.length}개 · 호실 ${A.places.length}개 · `+
+    `엘리베이터 ${st.elevators_registered}대<br>`+
+    `${vs.evidence_level||""}<br>소요시간은 추정값입니다.`;
+
+  await setFloor(A.floors.find(f=>f.id==="mirae/F3") ? "mirae/F3" : A.floors[0].id);
+}
+function pick(sel, cands){
+  const el=$(sel);
+  for(const c of cands){ if([...el.options].some(o=>o.value===c)){ el.value=c; return; } }
 }
 
-async function setFloor(fid){
-  A.floor = A.floors.find(f=>f.id===fid);
-  $("#floortabs").querySelectorAll("button").forEach(b=>
-    b.setAttribute("aria-pressed", String(b.dataset.f===fid)));
-  if(A.floor.plan_image && !A.imgs[fid]){
+async function setFloor(fid, manual){
+  A.floor = A.floors.find(f=>f.id===fid) || A.floors[0];
+  $("#floors").querySelectorAll("button").forEach(b=>
+    b.setAttribute("aria-pressed", String(b.dataset.f===A.floor.id)));
+  if(A.floor.plan_image && !A.imgs[A.floor.id]){
     await new Promise(res=>{
       const im=new Image();
-      im.onload=()=>{A.imgs[fid]=im;res();};
-      im.onerror=()=>res();
-      im.src=A.floor.plan_image;
+      im.onload=()=>{A.imgs[A.floor.id]=im;res();};
+      im.onerror=()=>res(); im.src=A.floor.plan_image;
     });
   }
-  fit();
-  const f=A.floor;
-  $("#hud").innerHTML =
-    `<b>${f.label}</b> · 미래관 평면도 ${f.plan_size?f.plan_size.join("×"):"-"}px`+
-    `<br>휠 = 확대/축소 · 드래그 = 이동`;
+  if(manual && A.route && A.route.status==="ok") fitRoute(); else fitAll();
 }
 
-function resize(){cv.width=cv.clientWidth;cv.height=cv.clientHeight;draw();}
-function fit(){
+/* ================= 뷰 ================= */
+function resize(){
+  const r=$("#map").getBoundingClientRect();
+  cv.width=Math.round(r.width*DPR); cv.height=Math.round(r.height*DPR);
+  draw();
+}
+function vw(){return cv.width/DPR}
+function vh(){return cv.height/DPR}
+
+function fitBox(x0,y0,x1,y1,padPx){
+  const w=Math.max(1,x1-x0), h=Math.max(1,y1-y0);
+  const pad=padPx ?? 26;
+  const availW=vw()-pad*2, availH=vh()-pad*2-topPad()-botPad();
+  const k=Math.min(availW/w, availH/h);
+  A.view.k=Math.max(A.minK,Math.min(A.maxK,k));
+  A.view.tx=pad+(availW-w*A.view.k)/2-x0*A.view.k;
+  A.view.ty=topPad()+pad+(availH-h*A.view.k)/2-y0*A.view.k;
+  draw();
+}
+function topPad(){ return $("#top").getBoundingClientRect().height*0.75; }
+function botPad(){
+  if(window.innerWidth>=820) return 20;
+  return $("#sheet").getBoundingClientRect().height*0.55;
+}
+function fitAll(){
   const im=A.imgs[A.floor?.id];
   if(!im){draw();return;}
-  const k=Math.min(cv.width/im.width, cv.height/im.height)*0.97;
-  A.view={k, tx:(cv.width-im.width*k)/2, ty:(cv.height-im.height*k)/2};
-  draw();
+  fitBox(0,0,im.width,im.height);
+}
+function fitRoute(){
+  const pts=routePts();
+  if(pts.length<2){fitAll();return;}
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const p of pts){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);
+                      x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1]);}
+  const m=Math.max(60,(x1-x0)*0.12,(y1-y0)*0.12);
+  fitBox(x0-m,y0-m,x1+m,y1+m);
 }
 const T=(x,y)=>[x*A.view.k+A.view.tx, y*A.view.k+A.view.ty];
 
-// ------------------------------------------------ 렌더
+function routePts(){
+  if(!A.route||A.route.status!=="ok")return [];
+  const out=[];
+  for(const s of A.route.segments){
+    if(s.space!==`plan:${A.floor?.id}`) continue;
+    for(const p of (s.polyline_px||[])) out.push(p);
+  }
+  return out;
+}
+
+/* ================= 렌더 ================= */
 function draw(){
-  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,vw(),vh());
+  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,vw(),vh());
+
   const im=A.imgs[A.floor?.id];
   if(im){
     ctx.save();
-    ctx.setTransform(A.view.k,0,0,A.view.k,A.view.tx,A.view.ty);
+    ctx.setTransform(DPR*A.view.k,0,0,DPR*A.view.k, DPR*A.view.tx, DPR*A.view.ty);
+    ctx.imageSmoothingEnabled = A.view.k < 2;
     ctx.drawImage(im,0,0);
     ctx.restore();
   }
-  // 등록된 그래프(연한 표시)
-  const pos={};
-  for(const n of A.nodes) if(n.floor_id===A.floor?.id) pos[n.id]=[n.x,n.y];
-  ctx.lineWidth=2; ctx.strokeStyle="rgba(77,163,255,.35)";
-  for(const e of A.edges){
-    const a=pos[e.from_node], b=pos[e.to_node];
-    if(!a||!b) continue;
-    const [ax,ay]=T(a[0],a[1]), [bx,by]=T(b[0],b[1]);
-    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
-  }
-  for(const id in pos){
-    const [x,y]=T(pos[id][0],pos[id][1]);
-    ctx.beginPath();ctx.arc(x,y,3.5,0,7);
-    ctx.fillStyle="rgba(139,148,158,.8)";ctx.fill();
-  }
+
   // 경로
-  if(A.route && A.route.status==="ok"){
-    const pts=[];
-    for(const s of A.route.segments){
-      if(s.space!==`plan:${A.floor?.id}`) continue;
-      for(const p of (s.polyline_px||[])) pts.push(p);
-    }
-    if(pts.length){
-      ctx.lineWidth=6; ctx.lineJoin="round"; ctx.lineCap="round";
-      ctx.strokeStyle="#4da3ff";
-      ctx.shadowColor="#4da3ff"; ctx.shadowBlur=12;
+  const pts=routePts();
+  if(pts.length>1){
+    // 외곽 흰 테두리 -> 본선
+    for(const [w,col] of [[11,"rgba(255,255,255,.95)"],[6.5,"#2563eb"]]){
+      ctx.lineWidth=w; ctx.strokeStyle=col;
+      ctx.lineJoin="round"; ctx.lineCap="round";
       ctx.beginPath();
       pts.forEach((p,i)=>{const [x,y]=T(p[0],p[1]); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
-      ctx.stroke(); ctx.shadowBlur=0;
-      // 시작/끝 마커
-      mark(pts[0], "#3fb950", "출발");
-      mark(pts[pts.length-1], "#f85149", "도착");
+      ctx.stroke();
+    }
+    marker(pts[0], "#16a34a", "출발");
+    marker(pts[pts.length-1], "#dc2626", "도착");
+  }
+
+  // 시설 아이콘 (현재 층)
+  for(const f of A.facilities){
+    if(f.floor_id!==A.floor?.id) continue;
+    const [x,y]=T(f.x,f.y);
+    if(x<-30||y<-30||x>vw()+30||y>vh()+30) continue;
+    const ico = f.kind==="elevator_lobby"?"🛗":(f.kind==="stair_landing"?"🪜":"🚪");
+    ctx.font="15px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillStyle="rgba(255,255,255,.9)";
+    ctx.beginPath(); ctx.arc(x,y,11,0,7); ctx.fill();
+    ctx.strokeStyle="#94a3b8"; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.fillText(ico,x,y+1);
+  }
+
+  // 호실 라벨 (확대 시)
+  if(A.view.k>0.55){
+    ctx.font=`700 ${Math.min(15,10+A.view.k*2)}px system-ui`;
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    for(const p of A.places){
+      if(p.floor_id!==A.floor?.id||!p.label_plan_point) continue;
+      const [x,y]=T(p.label_plan_point.x_px,p.label_plan_point.y_px);
+      if(x<0||y<0||x>vw()||y>vh()) continue;
+      const t=p.room_label;
+      const w=ctx.measureText(t).width+10;
+      ctx.fillStyle="rgba(13,17,23,.82)";
+      roundRect(x-w/2,y-10,w,20,6); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.fillText(t,x,y);
     }
   }
-  // 호실 라벨
-  for(const p of A.places){
-    if(p.floor_id!==A.floor?.id || !p.label_plan_point) continue;
-    const [x,y]=T(p.label_plan_point.x_px, p.label_plan_point.y_px);
-    ctx.fillStyle="rgba(255,255,255,.9)";ctx.font="bold 12px sans-serif";
-    ctx.fillText(p.room_label, x-4, y-8);
-  }
 }
-function mark(p,color,text){
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function marker(p,color,text){
   const [x,y]=T(p[0],p[1]);
-  ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fillStyle=color;ctx.fill();
-  ctx.strokeStyle="#0f1319";ctx.lineWidth=3;ctx.stroke();
-  ctx.fillStyle="#fff";ctx.font="bold 11px sans-serif";ctx.fillText(text,x+11,y+4);
+  ctx.beginPath(); ctx.arc(x,y,13,0,7); ctx.fillStyle=color; ctx.fill();
+  ctx.lineWidth=3.5; ctx.strokeStyle="#fff"; ctx.stroke();
+  ctx.font="700 11px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillStyle="#fff"; ctx.fillText(text.slice(0,2),x,y+.5);
 }
 
-// 팬/줌
-let drag=null;
-cv.addEventListener("mousedown",e=>{drag={x:e.clientX,y:e.clientY,...A.view};});
-window.addEventListener("mouseup",()=>drag=null);
-window.addEventListener("mousemove",e=>{
-  if(!drag)return;
-  A.view.tx=drag.tx+(e.clientX-drag.x); A.view.ty=drag.ty+(e.clientY-drag.y); draw();
+/* ================= 제스처 ================= */
+let ptrs=new Map(), pinch=null;
+const el=$("#map");
+el.addEventListener("pointerdown",e=>{
+  el.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2){
+    const [a,b]=[...ptrs.values()];
+    pinch={d:Math.hypot(a.x-b.x,a.y-b.y),k:A.view.k,
+           cx:(a.x+b.x)/2,cy:(a.y+b.y)/2,tx:A.view.tx,ty:A.view.ty};
+  }
 });
-cv.addEventListener("wheel",e=>{
+el.addEventListener("pointermove",e=>{
+  if(!ptrs.has(e.pointerId))return;
+  const prev=ptrs.get(e.pointerId);
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2&&pinch){
+    const [a,b]=[...ptrs.values()];
+    const d=Math.hypot(a.x-b.x,a.y-b.y);
+    const nk=Math.max(A.minK,Math.min(A.maxK,pinch.k*(d/pinch.d)));
+    const r=el.getBoundingClientRect();
+    const sx=pinch.cx-r.left, sy=pinch.cy-r.top;
+    const px=(sx-pinch.tx)/pinch.k, py=(sy-pinch.ty)/pinch.k;
+    A.view.k=nk; A.view.tx=sx-px*nk; A.view.ty=sy-py*nk;
+    draw(); return;
+  }
+  if(ptrs.size===1){
+    A.view.tx+=e.clientX-prev.x; A.view.ty+=e.clientY-prev.y; draw();
+  }
+});
+for(const ev of ["pointerup","pointercancel","pointerleave"])
+  el.addEventListener(ev,e=>{ptrs.delete(e.pointerId); if(ptrs.size<2)pinch=null;});
+el.addEventListener("wheel",e=>{
   e.preventDefault();
-  const r=cv.getBoundingClientRect(), sx=e.clientX-r.left, sy=e.clientY-r.top;
+  const r=el.getBoundingClientRect(), sx=e.clientX-r.left, sy=e.clientY-r.top;
   const px=(sx-A.view.tx)/A.view.k, py=(sy-A.view.ty)/A.view.k;
-  A.view.k=Math.max(.06,Math.min(30,A.view.k*(e.deltaY<0?1.15:1/1.15)));
+  A.view.k=Math.max(A.minK,Math.min(A.maxK,A.view.k*(e.deltaY<0?1.18:1/1.18)));
   A.view.tx=sx-px*A.view.k; A.view.ty=sy-py*A.view.k; draw();
 },{passive:false});
 
-// ------------------------------------------------ 조건 UI
-function objective(){
-  for(const id of ["cFast","cIndoor","cComfort"])
-    if($("#"+id).getAttribute("aria-pressed")==="true") return $("#"+id).dataset.obj;
-  return "fastest";
+function zoomBy(f){
+  const sx=vw()/2, sy=(topPad()+vh()-botPad())/2;
+  const px=(sx-A.view.tx)/A.view.k, py=(sy-A.view.ty)/A.view.k;
+  A.view.k=Math.max(A.minK,Math.min(A.maxK,A.view.k*f));
+  A.view.tx=sx-px*A.view.k; A.view.ty=sy-py*A.view.k; draw();
 }
-["cFast","cIndoor","cComfort"].forEach(id=>{
-  $("#"+id).onclick=()=>{
-    ["cFast","cIndoor","cComfort"].forEach(x=>
-      $("#"+x).setAttribute("aria-pressed",String(x===id)));
-  };
-});
-function toggle(id){
-  const el=$("#"+id);
-  el.onclick=()=>{
-    const v=el.getAttribute("aria-pressed")!=="true";
-    el.setAttribute("aria-pressed",String(v));
-    if(id==="cWheel" && v) $("#cNoStairs").setAttribute("aria-pressed","true");
-  };
-}
-toggle("cNoStairs"); toggle("cWheel");
+$("#zin").onclick=()=>zoomBy(1.45);
+$("#zout").onclick=()=>zoomBy(1/1.45);
+$("#fit").onclick=()=>{ A.route&&A.route.status==="ok" ? fitRoute() : fitAll(); };
 
-// ------------------------------------------------ 경로 요청
+/* ================= 하단 시트 ================= */
+const sheet=$("#sheet");
+let sy0=null, sh0=0;
+function sheetState(s){
+  sheet.classList.remove("collapsed","expanded");
+  if(s) sheet.classList.add(s);
+  setTimeout(()=>{resize();},240);
+}
+$("#grab").addEventListener("pointerdown",e=>{
+  sy0=e.clientY; sh0=sheet.getBoundingClientRect().height;
+  $("#grab").setPointerCapture(e.pointerId);
+});
+$("#grab").addEventListener("pointermove",e=>{
+  if(sy0===null)return;
+  const h=sh0-(e.clientY-sy0);
+  sheet.style.transition="none";
+  sheet.style.height=Math.max(96,Math.min(window.innerHeight*0.88,h))+"px";
+});
+$("#grab").addEventListener("pointerup",e=>{
+  if(sy0===null)return;
+  const h=sheet.getBoundingClientRect().height, H=window.innerHeight;
+  sheet.style.transition=""; sheet.style.height="";
+  sheetState(h<H*0.25?"collapsed":(h>H*0.6?"expanded":null));
+  sy0=null;
+});
+$("#grab").onclick=()=>{
+  sheetState(sheet.classList.contains("collapsed")?null:"collapsed");
+};
+
+/* ================= 조건 ================= */
+$("#objOpts").querySelectorAll(".opt").forEach(b=>{
+  b.onclick=()=>$("#objOpts").querySelectorAll(".opt").forEach(x=>
+    x.setAttribute("aria-pressed",String(x===b)));
+});
+function objective(){
+  const b=$("#objOpts").querySelector('[aria-pressed="true"]');
+  return b?b.dataset.obj:"fastest";
+}
+function tog(id,cb){
+  const e=$(id);
+  e.onclick=()=>{ e.setAttribute("aria-pressed",String(e.getAttribute("aria-pressed")!=="true")); cb&&cb(); };
+}
+tog("#oNoStairs");
+tog("#oWheel",()=>{ if($("#oWheel").getAttribute("aria-pressed")==="true")
+  $("#oNoStairs").setAttribute("aria-pressed","true"); });
+$("#swap").onclick=()=>{
+  const a=$("#from").value; $("#from").value=$("#to").value; $("#to").value=a;
+};
+
+/* ================= 길찾기 ================= */
 async function findRoute(){
+  $("#go").textContent="찾는 중…";
   const qs=new URLSearchParams({
-    graph:A.graph,
-    from:$("#from").value, to:$("#to").value, objective:objective(),
-    no_stairs:$("#cNoStairs").getAttribute("aria-pressed")==="true"?"1":"0",
-    wheelchair:$("#cWheel").getAttribute("aria-pressed")==="true"?"1":"0",
+    graph:A.graph, from:$("#from").value, to:$("#to").value,
+    objective:objective(),
+    no_stairs:$("#oNoStairs").getAttribute("aria-pressed")==="true"?"1":"0",
+    wheelchair:$("#oWheel").getAttribute("aria-pressed")==="true"?"1":"0",
   });
-  const r=await (await fetch("/api/route?"+qs)).json();
-  A.route=r; A.doneSteps.clear();
-  renderResult(r);
-  // 경로가 지나는 층 탭에 표시
+  let r;
+  try{ r=await (await fetch("/api/route?"+qs)).json(); }
+  catch(err){ r={status:"error",reasons:["서버 요청 실패: "+err.message]}; }
+  $("#go").textContent="길찾기";
+  A.route=r; A.done.clear();
+  render(r);
   const touched=new Set((r.metrics&&r.metrics.floors_touched)||[]);
-  $("#floortabs").querySelectorAll("button").forEach(b=>{
-    b.style.borderColor = touched.has(b.dataset.f) ? "var(--acc)" : "";
-  });
-  const f=(r.metrics&&r.metrics.floors_touched&&r.metrics.floors_touched[0]);
-  if(f && f!==A.floor?.id) await setFloor(f); else draw();
+  $("#floors").querySelectorAll("button").forEach(b=>
+    b.dataset.onroute = touched.has(b.dataset.f)?"1":"0");
+  if(r.status==="ok"){
+    const f0=r.metrics.floors_touched[0];
+    if(f0 && f0!==A.floor?.id) await setFloor(f0);
+    fitRoute();
+    sheetState(null);
+  } else draw();
 }
 $("#go").onclick=findRoute;
 
-function renderResult(r){
-  const B={ok:"b-ok",needs_clarification:"b-warn",
-           insufficient_verified_data:"b-warn",
-           no_route_under_constraints:"b-err",outside_coverage:"b-err"}[r.status]||"b-mut";
-  let h=`<div><span class="badge ${B}">${
-    {ok:"경로 찾음",needs_clarification:"확인 필요",
-     insufficient_verified_data:"자료 부족",
-     no_route_under_constraints:"경로 없음",
-     outside_coverage:"지원 범위 밖"}[r.status]||r.status
-  }</span></div>`;
-
+function render(r){
+  const S=$("#summary"), B=$("#sumBadges"), R=$("#reason"), L=$("#steps");
   if(r.status==="ok"){
-    const m=r.metrics;
-    const mm=Math.floor(m.estimated_time_s/60), ss=Math.round(m.estimated_time_s%60);
-    h+=`<table>
-      <tr><td>거리</td><td><b>${m.distance_m ?? "-"} m</b></td></tr>
-      <tr><td>예상 소요시간</td><td><b>${mm>0?mm+"분 ":""}${ss}초</b></td></tr>
-      <tr><td>계단</td><td>${m.stair_segments===0?"없음":m.stair_segments+" 구간"}</td></tr>
-      <tr><td>엘리베이터</td><td>${m.elevator_boardings===0?"이용 안 함":m.elevator_boardings+" 회 탑승"}</td></tr>
-      <tr><td>최대 경사</td><td>${m.observed_max_slope_pct!=null?m.observed_max_slope_pct+" %":"평지"}</td></tr>
-      <tr><td>경유 층</td><td>${m.floors_touched.map(f=>{
-            const fl=A.floors.find(x=>x.id===f); return fl?fl.label:f;}).join(" → ")}</td></tr>
-    </table>`;
-    h+=`<ol id="steps">`+r.instructions.map((s,i)=>
-      `<li data-i="${i}">${s.floor_label?`<b>[${s.floor_label}]</b> `:""}${s.text}`+
-      (s.confirm_prompt?`<br><button style="width:auto;padding:3px 9px;font-size:11px;margin-top:4px"
-        onclick="doneStep(${i})">완료</button>`:"")+`</li>`).join("")+`</ol>`;
-    if(m.floors_touched.length>1){
-      h+=`<div class="hint">층이 바뀌는 경로입니다. 오른쪽 위 층 탭으로
-          각 층의 경로를 확인하세요.</div>`;
-    }
+    const m=r.metrics, t=Math.round(m.estimated_time_s);
+    const mm=Math.floor(t/60), ss=t%60;
+    S.classList.add("on");
+    $("#sumTime").textContent = mm>0?`${mm}분 ${ss}초`:`${ss}초`;
+    $("#sumDist").textContent = `· ${m.distance_m ?? "-"} m`;
+    const bs=[];
+    bs.push(`<span class="badge ${m.stair_segments===0?"b-ok":"b-warn"}">${
+      m.stair_segments===0?"계단 없음":"계단 "+m.stair_segments+"구간"}</span>`);
+    if(m.elevator_boardings>0)
+      bs.push(`<span class="badge b-acc">🛗 ${m.elevator_boardings}회</span>`);
+    if(m.floors_touched.length>1)
+      bs.push(`<span class="badge b-mut">${m.floors_touched.map(fl=>{
+        const f=A.floors.find(x=>x.id===fl); return f?f.label:fl;}).join(" → ")}</span>`);
+    bs.push(`<span class="badge b-mut">추정</span>`);
+    B.innerHTML=bs.join("");
+    R.classList.remove("on");
+    L.innerHTML = r.instructions.map((s,i)=>{
+      const ev=/엘리베이터/.test(s.text), st=/계단/.test(s.text);
+      const ic=ev?"🛗":(st?"🪜":(/통과/.test(s.text)?"🚪":"↑"));
+      return `<li data-i="${i}">
+        <span class="ic ${ev?"ev":(st?"st":"")}">${ic}</span>
+        <span class="tx"><span class="fl">${s.floor_label||""}</span><br>${s.text}
+        ${s.confirm_prompt?`<br><button class="dn" onclick="doneStep(${i})">완료</button>`:""}
+        </span></li>`;
+    }).join("");
   } else {
-    if(r.origin_candidates?.length||r.destination_candidates?.length){
-      h+=`<div class="reason">출발 후보: ${JSON.stringify(r.origin_candidates)}
-도착 후보: ${JSON.stringify(r.destination_candidates)}</div>`;
-    }
-    if(r.blocked_counts) h+=`<div class="reason">제거 사유: ${JSON.stringify(r.blocked_counts,null,1)}</div>`;
-    if(r.unverified_edge_ids?.length)
-      h+=`<div class="reason">미검증 엣지:\n- ${r.unverified_edge_ids.join("\n- ")}</div>`;
-    h+=`<div class="reason">${(r.reasons||[]).map(x=>"· "+x).join("\n")}</div>`;
+    S.classList.remove("on"); B.innerHTML="";
+    const label={needs_clarification:"확인 필요",
+      insufficient_verified_data:"자료 부족",
+      no_route_under_constraints:"경로 없음",
+      outside_coverage:"지원 범위 밖", error:"오류"}[r.status]||r.status;
+    R.classList.add("on");
+    R.innerHTML=`<b class="badge b-err">${label}</b><br><br>`+
+      (r.reasons||[]).map(x=>"· "+x).join("\n");
+    L.innerHTML="";
   }
-  $("#result").innerHTML=h;
 }
 window.doneStep=i=>{
-  A.doneSteps.add(i);
+  A.done.add(i);
   const li=document.querySelector(`#steps li[data-i="${i}"]`);
-  if(li) li.classList.add("step-done");
+  if(li) li.classList.add("done");
 };
 
-// ------------------------------------------------ 의도 파싱
+/* ================= 음성 / 텍스트 ================= */
 async function ask(){
-  const text=$("#text").value.trim();
-  if(!text) return;
-  const qs=new URLSearchParams({text, session:JSON.stringify(A.session), graph:A.graph});
+  const text=$("#q").value.trim(); if(!text)return;
+  const qs=new URLSearchParams({text,session:JSON.stringify(A.session),graph:A.graph});
   const it=await (await fetch("/api/intent?"+qs)).json();
   A.session=it.session||{};
-
-  const need = it.needs_clarification.filter(x=>x!=="origin");
-  const cond=[];
-  if(it.constraints.wheelchair) cond.push("휠체어");
-  else if(it.constraints.no_stairs) cond.push("계단 없이");
-  if(it.objective==="indoor") cond.push("실내 위주");
-  if(it.objective==="comfort") cond.push("편한 이동");
-  if(!cond.length) cond.push("최단시간");
-  $("#intent").innerHTML=
-    `인식: <b>${it.destination.raw_text? it.destination.raw_text+"호" : "목적지 미확인"}</b>`+
-    (it.origin.raw_text?` ← ${it.origin.raw_text}호`:"")+
-    ` · 조건 <b>${cond.join(" + ")}</b>`+
-    (need.length?`<br><b style="color:var(--warn)">확인 필요: 목적지</b>`:"");
-
-  // UI 동기화
-  ["cFast","cIndoor","cComfort"].forEach(x=>$("#"+x).setAttribute("aria-pressed",
-     String($("#"+x).dataset.obj===it.objective)));
-  $("#cNoStairs").setAttribute("aria-pressed",String(it.constraints.no_stairs));
-  $("#cWheel").setAttribute("aria-pressed",String(it.constraints.wheelchair));
-  if(it.destination.place_id){
-    const pl=A.places.find(p=>p.door_node_ids.includes(it.destination.place_id));
-    if(pl) $("#to").value=pl.id;
-  }
-  if(it.origin.place_id){
-    const pl=A.places.find(p=>p.door_node_ids.includes(it.origin.place_id));
-    if(pl) $("#from").value=pl.id;
+  $("#objOpts").querySelectorAll(".opt").forEach(x=>
+    x.setAttribute("aria-pressed",String(x.dataset.obj===it.objective)));
+  $("#oNoStairs").setAttribute("aria-pressed",String(it.constraints.no_stairs));
+  $("#oWheel").setAttribute("aria-pressed",String(it.constraints.wheelchair));
+  for(const [k,sel] of [["destination","#to"],["origin","#from"]]){
+    const pid=it[k].place_id; if(!pid)continue;
+    const pl=A.places.find(p=>p.door_node_ids.includes(pid));
+    if(pl) $(sel).value=pl.id;
   }
   if(!it.destination.place_id){
-    renderResult({status:"needs_clarification",
-      reasons:["목적지를 확정하지 못했습니다. 등록된 호실만 안내합니다. "+
-               "화면에서 직접 선택하거나 호실 번호를 정확히 말해 주세요."],
-      destination_candidates:it.destination.candidates||[]});
+    render({status:"needs_clarification",
+      reasons:["목적지를 확정하지 못했습니다. 등록된 호실만 안내합니다.",
+               "아래에서 직접 선택하거나 호실 번호를 정확히 말해 주세요."]});
+    sheetState("expanded");
     return;
   }
   await findRoute();
 }
-$("#ask").onclick=ask;
-$("#text").addEventListener("keydown",e=>{if(e.key==="Enter")ask();});
+$("#q").addEventListener("keydown",e=>{ if(e.key==="Enter"){e.target.blur(); ask();} });
 document.querySelectorAll(".chip[data-ex]").forEach(c=>
-  c.onclick=()=>{$("#text").value=c.dataset.ex; ask();});
-$("#clear").onclick=()=>{
-  A.session={}; $("#text").value=""; $("#intent").textContent="";
-  $("#cNoStairs").setAttribute("aria-pressed","false");
-  $("#cWheel").setAttribute("aria-pressed","false");
-  A.route=null; $("#result").innerHTML=""; draw();
-};
+  c.onclick=()=>{ $("#q").value=c.dataset.ex; ask(); });
 
-// ------------------------------------------------ 음성 (Web Speech API)
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let rec=null;
 $("#mic").onclick=()=>{
   if(!SR){
-    $("#intent").innerHTML=`<b style="color:var(--warn)">이 브라우저는 음성 인식을
-      지원하지 않습니다. 텍스트/화면 선택으로 진행하세요.</b>`;
-    return;
+    render({status:"needs_clarification",
+      reasons:["이 브라우저는 음성 인식을 지원하지 않습니다.",
+               "Chrome 또는 Edge 에서 열거나, 텍스트/목록으로 선택해 주세요."]});
+    sheetState("expanded"); return;
   }
   if(rec){rec.stop();return;}
-  rec=new SR();
-  rec.lang="ko-KR"; rec.interimResults=true; rec.continuous=false;
-  $("#mic").classList.add("rec"); $("#mic").textContent="■ 녹음 중… (클릭 종료)";
-  rec.onresult=ev=>{
-    let t="";
-    for(const r of ev.results) t+=r[0].transcript;
-    $("#text").value=t;              // 사용자가 고칠 수 있게 표시
-  };
+  rec=new SR(); rec.lang="ko-KR"; rec.interimResults=true; rec.continuous=false;
+  $("#mic").classList.add("rec"); $("#mic").textContent="■";
+  rec.onresult=ev=>{ let t=""; for(const x of ev.results) t+=x[0].transcript;
+                     $("#q").value=t; };
   rec.onerror=ev=>{
-    $("#intent").innerHTML=`<b style="color:var(--err)">음성 인식 실패: ${ev.error}.
-      텍스트 입력으로 진행하세요.</b>`;
+    render({status:"needs_clarification",
+      reasons:[`음성 인식 실패: ${ev.error}`,"텍스트 입력이나 목록 선택으로 진행하세요."]});
+    sheetState("expanded");
   };
-  rec.onend=()=>{
-    $("#mic").classList.remove("rec"); $("#mic").textContent="🎤 음성 입력";
-    rec=null;
-    if($("#text").value.trim()) ask();
-  };
+  rec.onend=()=>{ $("#mic").classList.remove("rec"); $("#mic").textContent="🎤";
+                  rec=null; if($("#q").value.trim()) ask(); };
   rec.start();
 };
 
 window.addEventListener("resize",resize);
+window.addEventListener("orientationchange",()=>setTimeout(resize,250));
 resize(); boot();
 </script>
 </body>

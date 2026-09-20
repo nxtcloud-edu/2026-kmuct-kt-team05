@@ -25,3 +25,7 @@ data/raw_osm.json
 data/graph.json
 data/graph.geojson
 data/routes.geojson
+
+# 층별 지도(시안)는 데모 동작에 필요하므로 포함한다.
+# 원본 공식 도면(data/raw/floorplans)만 제외.
+!data/raw/navmaps/
