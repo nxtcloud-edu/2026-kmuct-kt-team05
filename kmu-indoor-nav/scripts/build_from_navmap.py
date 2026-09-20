@@ -554,11 +554,13 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
         return min(skel_cells, key=lambda c: (c[0] - cy) ** 2 + (c[1] - cx) ** 2)
 
     anchors = []   # (kind, key, attach_cell, px, py, extra)
-    for i, b in enumerate(evb[:1]):        # 엘리베이터는 가장 큰 덩어리 1개
+    # 승강기: 여러 코어가 있을 수 있다. 최대 3개까지 받고 facility 는 나중에
+    # 층간 위치 클러스터링으로 결정한다 (main 참고).
+    for i, b in enumerate(evb[:3]):
         a = nearest_skel(b["cy"], b["cx"])
         if a:
-            anchors.append(("elevator", f"{fid}/ev/1/lobby", a,
-                            b["cx"] * CELL, b["cy"] * CELL, None))
+            anchors.append(("elevator", f"{fid}/ev/{i+1}/lobby", a,
+                            b["cx"] * CELL, b["cy"] * CELL, i + 1))
     for i, b in enumerate(stb[:2]):        # 계단 최대 2개
         a = nearest_skel(b["cy"], b["cx"])
         if a:
@@ -679,7 +681,9 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
                                          "y_px": round(pyy, 1)},
                     "source_refs": REFS, "notes": []})
             else:
-                kindmap = {"elevator": ("elevator_lobby", EV, f"{label} 엘리베이터"),
+                kindmap = {"elevator": ("elevator_lobby", None,
+                                        f"{label} 엘리베이터"
+                                        + (f" {extra}" if extra and extra > 1 else "")),
                            "stairs": ("stair_landing", f"{STAIR}-{extra}",
                                       f"{label} 계단{extra}"),
                            "entrance": ("entrance_inside", None,
@@ -696,7 +700,8 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
                 emit(f"{fid}/e/link/{nid.replace('/', '_')}", nid, base, "corridor",
                      round(max(0.5, L), 2), walk_acc(1.8),
                      [[round(pxx, 1), round(pyy, 1)], [round(bx, 1), round(by, 1)]])
-                facility_nodes.setdefault(kind, []).append(nid)
+                facility_nodes.setdefault(kind, []).append(
+                    {"node": nid, "x": round(pxx, 1), "y": round(pyy, 1)})
 
     return {
         "floor": {"id": fid, "building_id": "mirae", "label": label,
@@ -722,6 +727,13 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
     }
 
 
+def floors_label(floors: list[dict], fid: str) -> str:
+    for f in floors:
+        if f["id"] == fid:
+            return f["label"]
+    return fid
+
+
 def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1].startswith("nav_"):
         f = sys.argv[1]
@@ -730,8 +742,8 @@ def main() -> None:
         return
 
     nodes, edges, places, floors, plans = [], [], [], [], []
-    ev_nodes, stair_nodes = {}, {}
-    order_of = {}
+    ev_by_floor: dict[str, list[dict]] = {}
+    stair_nodes, order_of = {}, {}
 
     for fname, fid, label, order in FLOORS:
         if not (NAV / fname).exists():
@@ -746,13 +758,45 @@ def main() -> None:
         edges += r["edges"]
         places += r["places"]
         order_of[fid] = order
-        for n in r["facilities"].get("elevator", [])[:1]:
-            ev_nodes[fid] = n
+        ev_by_floor[fid] = r["facilities"].get("elevator", [])
         if r["facilities"].get("stairs"):
-            stair_nodes[fid] = r["facilities"]["stairs"][0]
+            stair_nodes[fid] = r["facilities"]["stairs"][0]["node"]
         s = r["stats"]
         print(f"  {label:<7} 호실 {s['rooms']:>3}개  골격노드 {s['skel_nodes']:>4}  "
-              f"축척 {s['m_per_px']*1000:.1f} mm/px")
+              f"승강기 {len(ev_by_floor[fid])}개  축척 {s['m_per_px']*1000:.1f} mm/px")
+
+    # ---------------- 승강기 샤프트 클러스터링 ----------------
+    # 층마다 여러 코어가 있으므로, 같은 샤프트인지 판단해야 한다.
+    # 층간 (x,y) 근접도로 묶는다. 같은 샤프트는 층이 달라도 평면상 거의 같은 위치다.
+    # 2개 층 이상에 나타나는 클러스터만 승강기로 인정한다.
+    CLUSTER_PX = 90.0
+    clusters: list[dict] = []          # {"cx","cy","members":{fid: node}}
+    for fid in sorted(ev_by_floor, key=lambda f: order_of[f]):
+        for b in ev_by_floor[fid]:
+            best, bestd = None, 1e9
+            for c in clusters:
+                if fid in c["members"]:
+                    continue           # 한 층에서 같은 샤프트에 두 번 붙지 않는다
+                d = math.dist((b["x"], b["y"]), (c["cx"], c["cy"]))
+                if d < bestd:
+                    best, bestd = c, d
+            if best is not None and bestd <= CLUSTER_PX:
+                n = len(best["members"])
+                best["cx"] = (best["cx"] * n + b["x"]) / (n + 1)
+                best["cy"] = (best["cy"] * n + b["y"]) / (n + 1)
+                best["members"][fid] = b["node"]
+            else:
+                clusters.append({"cx": b["x"], "cy": b["y"],
+                                 "members": {fid: b["node"]}})
+
+    shafts = [c for c in clusters if len(c["members"]) >= 2]
+    orphans = [c for c in clusters if len(c["members"]) < 2]
+    print(f"\n승강기 샤프트 클러스터: {len(shafts)}개 "
+          f"(단일층만 나타난 후보 {len(orphans)}개는 제외)")
+    for i, c in enumerate(shafts, 1):
+        fl = ", ".join(floors_label(floors, f) for f in
+                       sorted(c["members"], key=lambda f: order_of[f]))
+        print(f"  샤프트 {i}: ({c['cx']:.0f},{c['cy']:.0f})  {len(c['members'])}개 층  [{fl}]")
 
     def emit_pair(eid, a, b, kind, acc, **kw):
         for i, (u, v) in enumerate([(a, b), (b, a)]):
@@ -770,31 +814,49 @@ def main() -> None:
                 e["elevator_to_floor"] = kw["et"] if i == 0 else kw["ef"]
             edges.append(e)
 
-    served = sorted(ev_nodes, key=lambda f: order_of[f])
-    for i, a in enumerate(served):
-        for b in served[i + 1:]:
-            emit_pair(f"mirae/e/ev/{order_of[a]}-{order_of[b]}",
-                      ev_nodes[a], ev_nodes[b], "elevator_ride", ride_acc(),
-                      facility=EV, ef=a, et=b)
+    # 샤프트별 facility id 부여 + 승차 엣지 (정차층 쌍마다 1개, 대기 1회)
+    node_index = {n["id"]: n for n in nodes}
+    elevators = []
+    for i, c in enumerate(shafts, 1):
+        eid = f"{EV}-{i}"
+        served = sorted(c["members"], key=lambda f: order_of[f])
+        for f in served:
+            node_index[c["members"][f]]["facility_id"] = eid
+        for a_i, a in enumerate(served):
+            for b in served[a_i + 1:]:
+                emit_pair(f"mirae/e/ev{i}/{order_of[a]}-{order_of[b]}",
+                          c["members"][a], c["members"][b],
+                          "elevator_ride", ride_acc(), facility=eid, ef=a, et=b)
+        elevators.append({
+            "id": eid, "building_id": "mirae", "shaft_group": f"G{i}",
+            "served_floor_ids": served,
+            "served_floors_evidence": fm(f"{len(served)}개 층 정차"),
+            "door_node_ids": {f: c["members"][f] for f in served},
+            "car_width_m": fm(1.6, "m"), "car_depth_m": fm(1.5, "m"),
+            "door_width_m": fm(0.9, "m"), "wheelchair_usable": fm(True),
+            "status": "in_service", "status_checked_at": None,
+            "wait_s_assumed": 25.0, "ride_s_per_floor_assumed": 5.0,
+            "board_alight_s_assumed": 10.0, "source_refs": REFS,
+            "notes": [f"시안 평면 위치 ({c['cx']:.0f},{c['cy']:.0f}) 기준 클러스터"]})
 
-    stf = sorted(stair_nodes, key=lambda f: order_of[f])
-    for a, b in zip(stf, stf[1:]):
+    # 단일층만 나타난 승강기 후보는 시설로 만들지 않되 노드는 남긴다
+    for c in orphans:
+        for f, nid in c["members"].items():
+            n = node_index[nid]
+            n["notes"] = n.get("notes", []) + [
+                "한 개 층에서만 검출되어 승강기 시설로 등록하지 않음 (현장 확인 필요)"]
+
+    # ---------------- 계단: 인접 층만 연결 ----------------
+    st_floors = sorted(stair_nodes, key=lambda f: order_of[f])
+    for a, b in zip(st_floors, st_floors[1:]):
         if order_of[b] - order_of[a] != 1:
             continue
         emit_pair(f"mirae/e/stair/{order_of[a]}-{order_of[b]}",
                   stair_nodes[a], stair_nodes[b], "stairs", stair_acc(),
                   facility=f"{STAIR}-1")
 
-    elevators = [{
-        "id": EV, "building_id": "mirae", "shaft_group": "G1",
-        "served_floor_ids": served,
-        "served_floors_evidence": fm(f"{len(served)}개 층 정차"),
-        "door_node_ids": {f: ev_nodes[f] for f in served},
-        "car_width_m": fm(1.6, "m"), "car_depth_m": fm(1.5, "m"),
-        "door_width_m": fm(0.9, "m"), "wheelchair_usable": fm(True),
-        "status": "in_service", "status_checked_at": None,
-        "wait_s_assumed": 25.0, "ride_s_per_floor_assumed": 5.0,
-        "board_alight_s_assumed": 10.0, "source_refs": REFS, "notes": []}]
+    served_all = sorted({f for c in shafts for f in c["members"]},
+                        key=lambda f: order_of[f])
 
     doc = {
         "graph_version": "mirae-nav-v1",
@@ -806,7 +868,8 @@ def main() -> None:
             "evidence_level": "내비게이션맵 시안 색상 규약 자동추출 + 일반 규격 추정",
             "wheelchair_accessible_routes_certified": False,
             "outdoor_connection": "출입구 노드까지",
-            "vertical_connection": f"엘리베이터 1대 ({len(served)}개 층) + 계단",
+            "vertical_connection": f"엘리베이터 {len(shafts)}대 "
+                                   f"({len(served_all)}개 층) + 계단",
             "floors": [f["id"] for f in floors]},
         "notes": ["시안(단순화 재렌더링)에서 추출했으므로 경로가 화면과 정렬된다.",
                   "원본 도면과는 좌표계가 다르다."],
