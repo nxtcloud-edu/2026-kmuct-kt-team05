@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # 로컬 dev 서버 로그
 dev*.log
+
+# 변환 스크립트가 만드는 백업 (원본은 campus-graph.base.json)
+data/campus-graph.json.bak
