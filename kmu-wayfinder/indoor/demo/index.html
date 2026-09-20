@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미래관 AI 캠퍼스 내비 (데모)</title>
+<style>
+  :root{--bg:#0f1319;--pan:#161b22;--fg:#e6edf3;--mut:#8b949e;--line:#2b313a;
+        --acc:#4da3ff;--ok:#3fb950;--warn:#d29922;--err:#f85149;}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.55 "Malgun Gothic",system-ui,sans-serif;
+       background:var(--bg);color:var(--fg);display:flex;height:100vh;overflow:hidden}
+  #left{width:390px;min-width:390px;display:flex;flex-direction:column;
+        border-right:1px solid var(--line);background:var(--pan)}
+  #scroll{overflow-y:auto;padding:14px}
+  #right{flex:1;position:relative;background:#080a0d}
+  canvas{position:absolute;inset:0}
+  h1{font-size:16px;margin:0 0 2px}
+  h2{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);
+     margin:16px 0 7px;border-bottom:1px solid var(--line);padding-bottom:5px}
+  label{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px}
+  select,input,button,textarea{width:100%;background:#0d1117;color:var(--fg);
+    border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit}
+  button{cursor:pointer;background:#21262d}
+  button:hover{background:#2d333b}
+  button.primary{background:var(--acc);color:#04121f;font-weight:700;border-color:var(--acc)}
+  button.mic{background:#2d1f3d;border-color:#5a3d7a}
+  button.mic.rec{background:var(--err);border-color:var(--err);color:#fff}
+  .row{display:flex;gap:8px}.row>*{flex:1}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .chip{padding:5px 10px;border:1px solid var(--line);border-radius:20px;
+        font-size:12px;cursor:pointer;background:#0d1117;user-select:none}
+  .chip[aria-pressed="true"]{background:var(--acc);color:#04121f;
+        border-color:var(--acc);font-weight:700}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;
+         font-weight:700;margin-right:5px}
+  .b-ok{background:#12351d;color:var(--ok);border:1px solid #1f6f33}
+  .b-warn{background:#3a2d0c;color:var(--warn);border:1px solid #7a5c14}
+  .b-err{background:#3d1416;color:var(--err);border:1px solid #8b2c2f}
+  .b-mut{background:#1c2128;color:var(--mut);border:1px solid var(--line)}
+  #result{margin-top:10px}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+  td{padding:3px 5px;border-bottom:1px solid var(--line);vertical-align:top}
+  td:first-child{color:var(--mut);width:46%}
+  ol{margin:8px 0 0;padding-left:20px;font-size:13px}
+  ol li{margin-bottom:7px}
+  .hint{font-size:11.5px;color:var(--mut);margin:5px 0}
+  .reason{font-size:12px;background:#0d1117;border:1px solid var(--line);
+          border-radius:6px;padding:8px;margin-top:7px;white-space:pre-wrap}
+  #hud{position:absolute;top:10px;left:10px;z-index:5;background:rgba(15,19,25,.92);
+       border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px}
+  #floortabs{position:absolute;top:10px;right:10px;z-index:5;display:flex;gap:6px}
+  #floortabs button{width:auto;padding:6px 12px;font-size:12px}
+  #floortabs button[aria-pressed="true"]{background:var(--acc);color:#04121f;font-weight:700}
+  .step-done{opacity:.45;text-decoration:line-through}
+</style>
+</head>
+<body>
+<div id="left">
+  <div id="scroll">
+    <h1>미래관 AI 캠퍼스 내비</h1>
+    <div id="status"><span class="badge b-mut">로딩…</span></div>
+
+    <h2>음성 / 텍스트로 요청</h2>
+    <div class="row">
+      <button id="mic" class="mic">🎤 음성 입력</button>
+      <button id="clear">초기화</button>
+    </div>
+    <input id="text" placeholder="예: 계단 없이 338호까지 가고 싶어">
+    <button id="ask" class="primary" style="margin-top:8px">요청 해석 + 경로 찾기</button>
+    <div class="chips">
+      <span class="chip" data-ex="338호까지 가장 빠르게">338호 빠르게</span>
+      <span class="chip" data-ex="계단 없이 338호까지 가고 싶어">계단 없이 338호</span>
+      <span class="chip" data-ex="휠체어를 타고 620호로 가고 싶어">휠체어 620호</span>
+      <span class="chip" data-ex="202호에서 730호까지 가장 빠르게">202→730 (2→7층)</span>
+      <span class="chip" data-ex="338호에서 449호까지">338→449 (3→4층)</span>
+    </div>
+    <div id="intent" class="hint"></div>
+
+    <h2>화면에서 직접 선택</h2>
+    <label>출발</label><select id="from"></select>
+    <label>목적지</label><select id="to"></select>
+    <label>이동 조건</label>
+    <div class="chips">
+      <span class="chip" id="cFast" data-obj="fastest" aria-pressed="true">빠르게</span>
+      <span class="chip" id="cIndoor" data-obj="indoor" aria-pressed="false">실내 위주</span>
+      <span class="chip" id="cComfort" data-obj="comfort" aria-pressed="false">편한 이동</span>
+    </div>
+    <div class="chips">
+      <span class="chip" id="cNoStairs" aria-pressed="false">계단 없이</span>
+      <span class="chip" id="cWheel" aria-pressed="false">휠체어 조건</span>
+    </div>
+    <button id="go" style="margin-top:9px">경로 검색</button>
+
+    <div id="result"></div>
+
+    <h2>데이터 상태</h2>
+    <div id="meta" class="hint"></div>
+  </div>
+</div>
+
+<div id="right">
+  <div id="hud">도면을 불러오는 중…</div>
+  <div id="floortabs"></div>
+  <canvas id="cv"></canvas>
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const cv = $("#cv"), ctx = cv.getContext("2d");
+
+const A = {
+  places:[], floors:[], nodes:[], edges:[],
+  floor:null, imgs:{}, route:null, session:{},
+  view:{k:1,tx:0,ty:0}, doneSteps:new Set(),
+  graph:"full",
+};
+
+// ------------------------------------------------ 로드
+async function boot(){
+  const st = await (await fetch(`/api/status?graph=${A.graph}`)).json();
+  const vs = st.verification_scope || {};
+  $("#status").innerHTML =
+    `<span class="badge b-mut">${st.graph_version}</span>`+
+    `<span class="badge b-ok">${A.floors_n||""}층 · 호실 ${A.places_n||""}개</span>`+
+    `<span class="badge b-mut">승강기 ${st.elevators_registered}대</span>`;
+  $("#meta").innerHTML =
+    `데이터 근거: ${vs.evidence_level||"-"}<br>`+
+    `층간 이동: ${vs.vertical_connection||"-"}<br>`+
+    `실외 구간: ${vs.outdoor_connection||"-"}<br>`+
+    `도면: 국민대 공과대학 공식 평면도 (미래관 = S2)<br>`+
+    `축척: 0.1008 m/px (도면 치수선 산출)`;
+
+  const p = await (await fetch(`/api/places?graph=${A.graph}`)).json();
+  A.places=p.places; A.floors=p.floors; A.nodes=p.nodes; A.edges=p.edges;
+  A.imgs={}; A.route=null; $("#result").innerHTML="";
+  A.floors_n=A.floors.length; A.places_n=A.places.length;
+  $("#status").innerHTML =
+    `<span class="badge b-mut">${st.graph_version}</span>`+
+    `<span class="badge b-ok">${A.floors_n}개 층 · 호실 ${A.places_n}개</span>`+
+    `<span class="badge b-mut">승강기 ${st.elevators_registered}대</span>`;
+
+  // 층별 그룹으로 정렬해서 표시
+  const byFloor = {};
+  for(const x of A.places) (byFloor[x.floor_id] ||= []).push(x);
+  const floorOrder = [...A.floors].sort((a,b)=>b.sort_order-a.sort_order);
+  const optHtml = floorOrder.map(f=>{
+    const items=(byFloor[f.id]||[]).sort((a,b)=>
+      String(a.room_label).localeCompare(String(b.room_label)));
+    if(!items.length) return "";
+    return `<optgroup label="${f.label}">`+items.map(x=>
+      `<option value="${x.id}">${x.room_label}호</option>`).join("")+`</optgroup>`;
+  }).join("");
+  for(const sel of [$("#from"),$("#to")]) sel.innerHTML = optHtml;
+  $("#from").value = "mirae/DRAWING-2F/202";
+  $("#to").value   = "mirae/F3/338";
+
+  A.floors.sort((a,b)=>b.sort_order-a.sort_order);
+  $("#floortabs").innerHTML = A.floors.map(f=>
+    `<button data-f="${f.id}" aria-pressed="false">${f.label}</button>`).join("");
+  $("#floortabs").querySelectorAll("button").forEach(b=>
+    b.onclick = ()=> setFloor(b.dataset.f));
+
+  await setFloor("mirae/F3");
+}
+
+async function setFloor(fid){
+  A.floor = A.floors.find(f=>f.id===fid);
+  $("#floortabs").querySelectorAll("button").forEach(b=>
+    b.setAttribute("aria-pressed", String(b.dataset.f===fid)));
+  if(A.floor.plan_image && !A.imgs[fid]){
+    await new Promise(res=>{
+      const im=new Image();
+      im.onload=()=>{A.imgs[fid]=im;res();};
+      im.onerror=()=>res();
+      im.src=A.floor.plan_image;
+    });
+  }
+  fit();
+  const f=A.floor;
+  $("#hud").innerHTML =
+    `<b>${f.label}</b> · 미래관 평면도 ${f.plan_size?f.plan_size.join("×"):"-"}px`+
+    `<br>휠 = 확대/축소 · 드래그 = 이동`;
+}
+
+function resize(){cv.width=cv.clientWidth;cv.height=cv.clientHeight;draw();}
+function fit(){
+  const im=A.imgs[A.floor?.id];
+  if(!im){draw();return;}
+  const k=Math.min(cv.width/im.width, cv.height/im.height)*0.97;
+  A.view={k, tx:(cv.width-im.width*k)/2, ty:(cv.height-im.height*k)/2};
+  draw();
+}
+const T=(x,y)=>[x*A.view.k+A.view.tx, y*A.view.k+A.view.ty];
+
+// ------------------------------------------------ 렌더
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const im=A.imgs[A.floor?.id];
+  if(im){
+    ctx.save();
+    ctx.setTransform(A.view.k,0,0,A.view.k,A.view.tx,A.view.ty);
+    ctx.drawImage(im,0,0);
+    ctx.restore();
+  }
+  // 등록된 그래프(연한 표시)
+  const pos={};
+  for(const n of A.nodes) if(n.floor_id===A.floor?.id) pos[n.id]=[n.x,n.y];
+  ctx.lineWidth=2; ctx.strokeStyle="rgba(77,163,255,.35)";
+  for(const e of A.edges){
+    const a=pos[e.from_node], b=pos[e.to_node];
+    if(!a||!b) continue;
+    const [ax,ay]=T(a[0],a[1]), [bx,by]=T(b[0],b[1]);
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+  }
+  for(const id in pos){
+    const [x,y]=T(pos[id][0],pos[id][1]);
+    ctx.beginPath();ctx.arc(x,y,3.5,0,7);
+    ctx.fillStyle="rgba(139,148,158,.8)";ctx.fill();
+  }
+  // 경로
+  if(A.route && A.route.status==="ok"){
+    const pts=[];
+    for(const s of A.route.segments){
+      if(s.space!==`plan:${A.floor?.id}`) continue;
+      for(const p of (s.polyline_px||[])) pts.push(p);
+    }
+    if(pts.length){
+      ctx.lineWidth=6; ctx.lineJoin="round"; ctx.lineCap="round";
+      ctx.strokeStyle="#4da3ff";
+      ctx.shadowColor="#4da3ff"; ctx.shadowBlur=12;
+      ctx.beginPath();
+      pts.forEach((p,i)=>{const [x,y]=T(p[0],p[1]); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+      ctx.stroke(); ctx.shadowBlur=0;
+      // 시작/끝 마커
+      mark(pts[0], "#3fb950", "출발");
+      mark(pts[pts.length-1], "#f85149", "도착");
+    }
+  }
+  // 호실 라벨
+  for(const p of A.places){
+    if(p.floor_id!==A.floor?.id || !p.label_plan_point) continue;
+    const [x,y]=T(p.label_plan_point.x_px, p.label_plan_point.y_px);
+    ctx.fillStyle="rgba(255,255,255,.9)";ctx.font="bold 12px sans-serif";
+    ctx.fillText(p.room_label, x-4, y-8);
+  }
+}
+function mark(p,color,text){
+  const [x,y]=T(p[0],p[1]);
+  ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fillStyle=color;ctx.fill();
+  ctx.strokeStyle="#0f1319";ctx.lineWidth=3;ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font="bold 11px sans-serif";ctx.fillText(text,x+11,y+4);
+}
+
+// 팬/줌
+let drag=null;
+cv.addEventListener("mousedown",e=>{drag={x:e.clientX,y:e.clientY,...A.view};});
+window.addEventListener("mouseup",()=>drag=null);
+window.addEventListener("mousemove",e=>{
+  if(!drag)return;
+  A.view.tx=drag.tx+(e.clientX-drag.x); A.view.ty=drag.ty+(e.clientY-drag.y); draw();
+});
+cv.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const r=cv.getBoundingClientRect(), sx=e.clientX-r.left, sy=e.clientY-r.top;
+  const px=(sx-A.view.tx)/A.view.k, py=(sy-A.view.ty)/A.view.k;
+  A.view.k=Math.max(.06,Math.min(30,A.view.k*(e.deltaY<0?1.15:1/1.15)));
+  A.view.tx=sx-px*A.view.k; A.view.ty=sy-py*A.view.k; draw();
+},{passive:false});
+
+// ------------------------------------------------ 조건 UI
+function objective(){
+  for(const id of ["cFast","cIndoor","cComfort"])
+    if($("#"+id).getAttribute("aria-pressed")==="true") return $("#"+id).dataset.obj;
+  return "fastest";
+}
+["cFast","cIndoor","cComfort"].forEach(id=>{
+  $("#"+id).onclick=()=>{
+    ["cFast","cIndoor","cComfort"].forEach(x=>
+      $("#"+x).setAttribute("aria-pressed",String(x===id)));
+  };
+});
+function toggle(id){
+  const el=$("#"+id);
+  el.onclick=()=>{
+    const v=el.getAttribute("aria-pressed")!=="true";
+    el.setAttribute("aria-pressed",String(v));
+    if(id==="cWheel" && v) $("#cNoStairs").setAttribute("aria-pressed","true");
+  };
+}
+toggle("cNoStairs"); toggle("cWheel");
+
+// ------------------------------------------------ 경로 요청
+async function findRoute(){
+  const qs=new URLSearchParams({
+    graph:A.graph,
+    from:$("#from").value, to:$("#to").value, objective:objective(),
+    no_stairs:$("#cNoStairs").getAttribute("aria-pressed")==="true"?"1":"0",
+    wheelchair:$("#cWheel").getAttribute("aria-pressed")==="true"?"1":"0",
+  });
+  const r=await (await fetch("/api/route?"+qs)).json();
+  A.route=r; A.doneSteps.clear();
+  renderResult(r);
+  // 경로가 지나는 층 탭에 표시
+  const touched=new Set((r.metrics&&r.metrics.floors_touched)||[]);
+  $("#floortabs").querySelectorAll("button").forEach(b=>{
+    b.style.borderColor = touched.has(b.dataset.f) ? "var(--acc)" : "";
+  });
+  const f=(r.metrics&&r.metrics.floors_touched&&r.metrics.floors_touched[0]);
+  if(f && f!==A.floor?.id) await setFloor(f); else draw();
+}
+$("#go").onclick=findRoute;
+
+function renderResult(r){
+  const B={ok:"b-ok",needs_clarification:"b-warn",
+           insufficient_verified_data:"b-warn",
+           no_route_under_constraints:"b-err",outside_coverage:"b-err"}[r.status]||"b-mut";
+  let h=`<div><span class="badge ${B}">${
+    {ok:"경로 찾음",needs_clarification:"확인 필요",
+     insufficient_verified_data:"자료 부족",
+     no_route_under_constraints:"경로 없음",
+     outside_coverage:"지원 범위 밖"}[r.status]||r.status
+  }</span></div>`;
+
+  if(r.status==="ok"){
+    const m=r.metrics;
+    const mm=Math.floor(m.estimated_time_s/60), ss=Math.round(m.estimated_time_s%60);
+    h+=`<table>
+      <tr><td>거리</td><td><b>${m.distance_m ?? "-"} m</b></td></tr>
+      <tr><td>예상 소요시간</td><td><b>${mm>0?mm+"분 ":""}${ss}초</b></td></tr>
+      <tr><td>계단</td><td>${m.stair_segments===0?"없음":m.stair_segments+" 구간"}</td></tr>
+      <tr><td>엘리베이터</td><td>${m.elevator_boardings===0?"이용 안 함":m.elevator_boardings+" 회 탑승"}</td></tr>
+      <tr><td>최대 경사</td><td>${m.observed_max_slope_pct!=null?m.observed_max_slope_pct+" %":"평지"}</td></tr>
+      <tr><td>경유 층</td><td>${m.floors_touched.map(f=>{
+            const fl=A.floors.find(x=>x.id===f); return fl?fl.label:f;}).join(" → ")}</td></tr>
+    </table>`;
+    h+=`<ol id="steps">`+r.instructions.map((s,i)=>
+      `<li data-i="${i}">${s.floor_label?`<b>[${s.floor_label}]</b> `:""}${s.text}`+
+      (s.confirm_prompt?`<br><button style="width:auto;padding:3px 9px;font-size:11px;margin-top:4px"
+        onclick="doneStep(${i})">완료</button>`:"")+`</li>`).join("")+`</ol>`;
+    if(m.floors_touched.length>1){
+      h+=`<div class="hint">층이 바뀌는 경로입니다. 오른쪽 위 층 탭으로
+          각 층의 경로를 확인하세요.</div>`;
+    }
+  } else {
+    if(r.origin_candidates?.length||r.destination_candidates?.length){
+      h+=`<div class="reason">출발 후보: ${JSON.stringify(r.origin_candidates)}
+도착 후보: ${JSON.stringify(r.destination_candidates)}</div>`;
+    }
+    if(r.blocked_counts) h+=`<div class="reason">제거 사유: ${JSON.stringify(r.blocked_counts,null,1)}</div>`;
+    if(r.unverified_edge_ids?.length)
+      h+=`<div class="reason">미검증 엣지:\n- ${r.unverified_edge_ids.join("\n- ")}</div>`;
+    h+=`<div class="reason">${(r.reasons||[]).map(x=>"· "+x).join("\n")}</div>`;
+  }
+  $("#result").innerHTML=h;
+}
+window.doneStep=i=>{
+  A.doneSteps.add(i);
+  const li=document.querySelector(`#steps li[data-i="${i}"]`);
+  if(li) li.classList.add("step-done");
+};
+
+// ------------------------------------------------ 의도 파싱
+async function ask(){
+  const text=$("#text").value.trim();
+  if(!text) return;
+  const qs=new URLSearchParams({text, session:JSON.stringify(A.session), graph:A.graph});
+  const it=await (await fetch("/api/intent?"+qs)).json();
+  A.session=it.session||{};
+
+  const need = it.needs_clarification.filter(x=>x!=="origin");
+  const cond=[];
+  if(it.constraints.wheelchair) cond.push("휠체어");
+  else if(it.constraints.no_stairs) cond.push("계단 없이");
+  if(it.objective==="indoor") cond.push("실내 위주");
+  if(it.objective==="comfort") cond.push("편한 이동");
+  if(!cond.length) cond.push("최단시간");
+  $("#intent").innerHTML=
+    `인식: <b>${it.destination.raw_text? it.destination.raw_text+"호" : "목적지 미확인"}</b>`+
+    (it.origin.raw_text?` ← ${it.origin.raw_text}호`:"")+
+    ` · 조건 <b>${cond.join(" + ")}</b>`+
+    (need.length?`<br><b style="color:var(--warn)">확인 필요: 목적지</b>`:"");
+
+  // UI 동기화
+  ["cFast","cIndoor","cComfort"].forEach(x=>$("#"+x).setAttribute("aria-pressed",
+     String($("#"+x).dataset.obj===it.objective)));
+  $("#cNoStairs").setAttribute("aria-pressed",String(it.constraints.no_stairs));
+  $("#cWheel").setAttribute("aria-pressed",String(it.constraints.wheelchair));
+  if(it.destination.place_id){
+    const pl=A.places.find(p=>p.door_node_ids.includes(it.destination.place_id));
+    if(pl) $("#to").value=pl.id;
+  }
+  if(it.origin.place_id){
+    const pl=A.places.find(p=>p.door_node_ids.includes(it.origin.place_id));
+    if(pl) $("#from").value=pl.id;
+  }
+  if(!it.destination.place_id){
+    renderResult({status:"needs_clarification",
+      reasons:["목적지를 확정하지 못했습니다. 등록된 호실만 안내합니다. "+
+               "화면에서 직접 선택하거나 호실 번호를 정확히 말해 주세요."],
+      destination_candidates:it.destination.candidates||[]});
+    return;
+  }
+  await findRoute();
+}
+$("#ask").onclick=ask;
+$("#text").addEventListener("keydown",e=>{if(e.key==="Enter")ask();});
+document.querySelectorAll(".chip[data-ex]").forEach(c=>
+  c.onclick=()=>{$("#text").value=c.dataset.ex; ask();});
+$("#clear").onclick=()=>{
+  A.session={}; $("#text").value=""; $("#intent").textContent="";
+  $("#cNoStairs").setAttribute("aria-pressed","false");
+  $("#cWheel").setAttribute("aria-pressed","false");
+  A.route=null; $("#result").innerHTML=""; draw();
+};
+
+// ------------------------------------------------ 음성 (Web Speech API)
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec=null;
+$("#mic").onclick=()=>{
+  if(!SR){
+    $("#intent").innerHTML=`<b style="color:var(--warn)">이 브라우저는 음성 인식을
+      지원하지 않습니다. 텍스트/화면 선택으로 진행하세요.</b>`;
+    return;
+  }
+  if(rec){rec.stop();return;}
+  rec=new SR();
+  rec.lang="ko-KR"; rec.interimResults=true; rec.continuous=false;
+  $("#mic").classList.add("rec"); $("#mic").textContent="■ 녹음 중… (클릭 종료)";
+  rec.onresult=ev=>{
+    let t="";
+    for(const r of ev.results) t+=r[0].transcript;
+    $("#text").value=t;              // 사용자가 고칠 수 있게 표시
+  };
+  rec.onerror=ev=>{
+    $("#intent").innerHTML=`<b style="color:var(--err)">음성 인식 실패: ${ev.error}.
+      텍스트 입력으로 진행하세요.</b>`;
+  };
+  rec.onend=()=>{
+    $("#mic").classList.remove("rec"); $("#mic").textContent="🎤 음성 입력";
+    rec=null;
+    if($("#text").value.trim()) ask();
+  };
+  rec.start();
+};
+
+window.addEventListener("resize",resize);
+resize(); boot();
+</script>
+</body>
+</html>

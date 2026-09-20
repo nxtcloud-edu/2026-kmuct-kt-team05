@@ -1,0 +1,1758 @@
+{
+  "graph_version": "synthetic-closure-1",
+  "schema_version": "1.0.0",
+  "generated_at": "2026-09-20T00:00:00+09:00",
+  "verification_scope": {
+    "synthetic": true,
+    "note": "가상 데이터. 실제 캠퍼스와 무관."
+  },
+  "notes": [
+    "tests/fixtures/synthetic - 실제 지도에 노출 금지"
+  ],
+  "buildings": [
+    {
+      "id": "synth/tower",
+      "official_name": "합성타워",
+      "campus_code": null,
+      "aliases": [],
+      "wings": [],
+      "footprint": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    }
+  ],
+  "floorplans": [
+    {
+      "id": "synth/plan/F1",
+      "image_ref": "synthetic://F1",
+      "width_px": 1000,
+      "height_px": 1000,
+      "scale_m_per_px": {
+        "value": 0.1,
+        "verification": "field_measured",
+        "unit": "m/px",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "mapping_status": "field_confirmed"
+    },
+    {
+      "id": "synth/plan/F2",
+      "image_ref": "synthetic://F2",
+      "width_px": 1000,
+      "height_px": 1000,
+      "scale_m_per_px": {
+        "value": 0.1,
+        "verification": "field_measured",
+        "unit": "m/px",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "mapping_status": "field_confirmed"
+    },
+    {
+      "id": "synth/plan/F3",
+      "image_ref": "synthetic://F3",
+      "width_px": 1000,
+      "height_px": 1000,
+      "scale_m_per_px": {
+        "value": 0.1,
+        "verification": "field_measured",
+        "unit": "m/px",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "mapping_status": "field_confirmed"
+    }
+  ],
+  "floors": [
+    {
+      "id": "synth/F1",
+      "building_id": "synth/tower",
+      "label": "1층",
+      "sort_order": 1,
+      "plan_id": "synth/plan/F1",
+      "elevation_m": {
+        "value": 0.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      }
+    },
+    {
+      "id": "synth/F2",
+      "building_id": "synth/tower",
+      "label": "2층",
+      "sort_order": 2,
+      "plan_id": "synth/plan/F2",
+      "elevation_m": {
+        "value": 4.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      }
+    },
+    {
+      "id": "synth/F3",
+      "building_id": "synth/tower",
+      "label": "3층",
+      "sort_order": 3,
+      "plan_id": "synth/plan/F3",
+      "elevation_m": {
+        "value": 8.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      }
+    }
+  ],
+  "places": [],
+  "nodes": [
+    {
+      "id": "f1/lobby",
+      "kind": "corridor_junction",
+      "building_id": "synth/tower",
+      "floor_id": "synth/F1",
+      "name": "1층 로비",
+      "facility_id": null,
+      "source_refs": [
+        "synthetic"
+      ],
+      "plan_point": {
+        "coordinate_space": "plan:synth/F1",
+        "x_px": 100,
+        "y_px": 100
+      }
+    },
+    {
+      "id": "f1/stair",
+      "kind": "stair_landing",
+      "building_id": "synth/tower",
+      "floor_id": "synth/F1",
+      "name": "1층 계단참",
+      "facility_id": "stair/S1",
+      "source_refs": [
+        "synthetic"
+      ],
+      "plan_point": {
+        "coordinate_space": "plan:synth/F1",
+        "x_px": 200,
+        "y_px": 100
+      }
+    },
+    {
+      "id": "f3/stair",
+      "kind": "stair_landing",
+      "building_id": "synth/tower",
+      "floor_id": "synth/F3",
+      "name": "3층 계단참",
+      "facility_id": "stair/S1",
+      "source_refs": [
+        "synthetic"
+      ],
+      "plan_point": {
+        "coordinate_space": "plan:synth/F3",
+        "x_px": 200,
+        "y_px": 100
+      }
+    },
+    {
+      "id": "f3/hall",
+      "kind": "corridor_junction",
+      "building_id": "synth/tower",
+      "floor_id": "synth/F3",
+      "name": "3층 홀",
+      "facility_id": null,
+      "source_refs": [
+        "synthetic"
+      ],
+      "plan_point": {
+        "coordinate_space": "plan:synth/F3",
+        "x_px": 100,
+        "y_px": 100
+      }
+    },
+    {
+      "id": "f1/ev",
+      "kind": "elevator_lobby",
+      "building_id": "synth/tower",
+      "floor_id": "synth/F1",
+      "name": "1층 승강장",
+      "facility_id": "ev/E1",
+      "source_refs": [
+        "synthetic"
+      ],
+      "plan_point": {
+        "coordinate_space": "plan:synth/F1",
+        "x_px": 300,
+        "y_px": 100
+      }
+    },
+    {
+      "id": "f2/ev",
+      "kind": "elevator_lobby",
+      "building_id": "synth/tower",
+      "floor_id": "synth/F2",
+      "name": "2층 승강장",
+      "facility_id": "ev/E1",
+      "source_refs": [
+        "synthetic"
+      ],
+      "plan_point": {
+        "coordinate_space": "plan:synth/F2",
+        "x_px": 300,
+        "y_px": 100
+      }
+    },
+    {
+      "id": "f3/ev",
+      "kind": "elevator_lobby",
+      "building_id": "synth/tower",
+      "floor_id": "synth/F3",
+      "name": "3층 승강장",
+      "facility_id": "ev/E1",
+      "source_refs": [
+        "synthetic"
+      ],
+      "plan_point": {
+        "coordinate_space": "plan:synth/F3",
+        "x_px": 300,
+        "y_px": 100
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e/f1lobby-stair",
+      "from_node": "f1/lobby",
+      "to_node": "f1/stair",
+      "kind": "corridor",
+      "horizontal_length_m": {
+        "value": 10.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 10.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_down_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.8,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/f1lobby-stair/rev",
+      "from_node": "f1/stair",
+      "to_node": "f1/lobby",
+      "kind": "corridor",
+      "horizontal_length_m": {
+        "value": 10.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 10.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_down_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.8,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/stairs13",
+      "from_node": "f1/stair",
+      "to_node": "f3/stair",
+      "kind": "stairs",
+      "horizontal_length_m": {
+        "value": 12.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 12.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": 8.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "accessibility": {
+        "stairs": {
+          "value": true,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": 40,
+          "verification": "field_measured",
+          "unit": "count",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_up_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_down_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.4,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/stairs13/rev",
+      "from_node": "f3/stair",
+      "to_node": "f1/stair",
+      "kind": "stairs",
+      "horizontal_length_m": {
+        "value": 12.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 12.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": 8.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "accessibility": {
+        "stairs": {
+          "value": true,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": 40,
+          "verification": "field_measured",
+          "unit": "count",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_up_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_down_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.4,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/f3stair-hall",
+      "from_node": "f3/stair",
+      "to_node": "f3/hall",
+      "kind": "corridor",
+      "horizontal_length_m": {
+        "value": 10.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 10.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_down_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.8,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/f3stair-hall/rev",
+      "from_node": "f3/hall",
+      "to_node": "f3/stair",
+      "kind": "corridor",
+      "horizontal_length_m": {
+        "value": 10.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 10.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_down_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.8,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/f1lobby-ev",
+      "from_node": "f1/lobby",
+      "to_node": "f1/ev",
+      "kind": "corridor",
+      "horizontal_length_m": {
+        "value": 20.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 20.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_down_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.8,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/f1lobby-ev/rev",
+      "from_node": "f1/ev",
+      "to_node": "f1/lobby",
+      "kind": "corridor",
+      "horizontal_length_m": {
+        "value": 20.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 20.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_down_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.8,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/f3ev-hall",
+      "from_node": "f3/ev",
+      "to_node": "f3/hall",
+      "kind": "corridor",
+      "horizontal_length_m": {
+        "value": 20.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 20.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_down_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.8,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/f3ev-hall/rev",
+      "from_node": "f3/hall",
+      "to_node": "f3/ev",
+      "kind": "corridor",
+      "horizontal_length_m": {
+        "value": 20.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "traversal_length_m": {
+        "value": 20.0,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "slope_down_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": 1.8,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "threshold_m": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "m",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": null,
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/ev/F1-F2",
+      "from_node": "f1/ev",
+      "to_node": "f2/ev",
+      "kind": "elevator_ride",
+      "horizontal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "traversal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_down_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "threshold_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": "ev/E1",
+      "elevator_from_floor": "synth/F1",
+      "elevator_to_floor": "synth/F2",
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/ev/F1-F2/rev",
+      "from_node": "f2/ev",
+      "to_node": "f1/ev",
+      "kind": "elevator_ride",
+      "horizontal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "traversal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_down_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "threshold_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": "ev/E1",
+      "elevator_from_floor": "synth/F1",
+      "elevator_to_floor": "synth/F2",
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/ev/F1-F3",
+      "from_node": "f1/ev",
+      "to_node": "f3/ev",
+      "kind": "elevator_ride",
+      "horizontal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "traversal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_down_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "threshold_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": "ev/E1",
+      "elevator_from_floor": "synth/F1",
+      "elevator_to_floor": "synth/F3",
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/ev/F1-F3/rev",
+      "from_node": "f3/ev",
+      "to_node": "f1/ev",
+      "kind": "elevator_ride",
+      "horizontal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "traversal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_down_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "threshold_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": "ev/E1",
+      "elevator_from_floor": "synth/F1",
+      "elevator_to_floor": "synth/F3",
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/ev/F2-F3",
+      "from_node": "f2/ev",
+      "to_node": "f3/ev",
+      "kind": "elevator_ride",
+      "horizontal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "traversal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_down_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "threshold_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": "ev/E1",
+      "elevator_from_floor": "synth/F2",
+      "elevator_to_floor": "synth/F3",
+      "source_refs": [
+        "synthetic"
+      ]
+    },
+    {
+      "id": "e/ev/F2-F3/rev",
+      "from_node": "f3/ev",
+      "to_node": "f2/ev",
+      "kind": "elevator_ride",
+      "horizontal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "traversal_length_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "vertical_rise_m": {
+        "value": null,
+        "verification": "unknown"
+      },
+      "accessibility": {
+        "stairs": {
+          "value": false,
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "step_count": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_up_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "slope_down_pct": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "cross_slope_pct": {
+          "value": 0.0,
+          "verification": "field_measured",
+          "unit": "%",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "clear_width_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "threshold_m": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "surface": {
+          "value": "concrete",
+          "verification": "field_measured",
+          "source_refs": [
+            "synthetic"
+          ]
+        },
+        "door_operability": {
+          "value": null,
+          "verification": "unknown"
+        },
+        "wheelchair_usable": {
+          "value": null,
+          "verification": "unknown"
+        }
+      },
+      "facility_id": "ev/E1",
+      "elevator_from_floor": "synth/F2",
+      "elevator_to_floor": "synth/F3",
+      "source_refs": [
+        "synthetic"
+      ]
+    }
+  ],
+  "elevators": [
+    {
+      "id": "ev/E1",
+      "building_id": "synth/tower",
+      "shaft_group": "G1",
+      "served_floor_ids": [
+        "synth/F1",
+        "synth/F2",
+        "synth/F3"
+      ],
+      "served_floors_evidence": {
+        "value": "현장 확인(가상)",
+        "verification": "field_measured",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "door_node_ids": {
+        "synth/F1": "f1/ev",
+        "synth/F2": "f2/ev",
+        "synth/F3": "f3/ev"
+      },
+      "car_width_m": {
+        "value": 1.6,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "car_depth_m": {
+        "value": 1.5,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "door_width_m": {
+        "value": 0.9,
+        "verification": "field_measured",
+        "unit": "m",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "wheelchair_usable": {
+        "value": true,
+        "verification": "field_measured",
+        "source_refs": [
+          "synthetic"
+        ]
+      },
+      "status": "out_of_service",
+      "status_checked_at": "2026-09-20T09:00+09:00",
+      "wait_s_assumed": 25.0,
+      "ride_s_per_floor_assumed": 5.0,
+      "board_alight_s_assumed": 10.0,
+      "source_refs": [
+        "synthetic"
+      ]
+    }
+  ],
+  "closures": [
+    {
+      "id": "cl/1",
+      "target_kind": "facility",
+      "target_id": "ev/E1",
+      "status": "closed",
+      "reason": "정기 점검(가상)",
+      "source_ref": "synthetic",
+      "updated_at": "2026-09-20T09:00+09:00"
+    }
+  ]
+}
