@@ -464,6 +464,27 @@ def ride_acc():
 
 
 # ---------------------------------------------------------------- 층 추출
+def first_walkable_toward(mask, gw, gh, src: tuple[float, float],
+                          dst: tuple[int, int]) -> tuple[int, int] | None:
+    """src(셀 좌표, 실수) 에서 dst(셀) 방향으로 직선 진행하며
+    **처음 만나는 통행 셀**을 돌려준다.
+
+    OCR 호실 이름표는 방 안쪽에 있으므로 그 위치를 문으로 쓰면
+    노드가 방 내부에 놓이고 복도까지의 연결선이 벽을 관통한다.
+    이름표에서 복도 방향으로 나아가 통행 영역에 진입하는 첫 지점이
+    방과 복도의 경계, 즉 문에 해당한다.
+    """
+    sy, sx = src
+    dy, dx = dst[0] - sy, dst[1] - sx
+    steps = max(2, int(max(abs(dy), abs(dx)) * 2))
+    for i in range(steps + 1):
+        t = i / steps
+        y, x = int(round(sy + dy * t)), int(round(sx + dx * t))
+        if 0 <= y < gh and 0 <= x < gw and mask[y][x]:
+            return (y, x)
+    return None
+
+
 def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False):
     img = Image.open(NAV / fname)
     W, H = img.size
@@ -554,6 +575,7 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
         return min(skel_cells, key=lambda c: (c[0] - cy) ** 2 + (c[1] - cx) ** 2)
 
     anchors = []   # (kind, key, attach_cell, px, py, extra)
+    label_px: dict[str, tuple[float, float]] = {}   # 호실 -> 이름표 표시 좌표
     # 승강기: 여러 코어가 있을 수 있다. 최대 3개까지 받고 facility 는 나중에
     # 층간 위치 클러스터링으로 결정한다 (main 참고).
     for i, b in enumerate(evb[:3]):
@@ -574,11 +596,21 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
     for r in labels:
         a = nearest_skel(r["y"] / CELL, r["x"] / CELL)
         if a:
-            # 라벨이 통행공간에서 너무 멀면 버린다 (25 셀 = 150px)
+            # 라벨이 통행공간에서 너무 멀면 버린다
             d = math.dist((a[0], a[1]), (r["y"] / CELL, r["x"] / CELL))
             if d <= 45:
-                anchors.append(("room", f"{fid}/door/{r['room']}", a,
-                                r["x"], r["y"], r["room"]))
+                # 문 위치 = 이름표에서 복도 방향으로 나아가 통행영역에 들어가는 첫 셀
+                dc = first_walkable_toward(mask, gw, gh,
+                                           (r["y"] / CELL, r["x"] / CELL), a)
+                if dc is None:
+                    dc = a
+                # 부착점은 '문' 기준으로 다시 잡는다. 이름표 기준으로 잡으면
+                # 연결선이 길어져 벽을 가로지를 수 있다.
+                a2 = nearest_skel(dc[0], dc[1]) or a
+                door_px = (dc[1] * CELL + CELL / 2, dc[0] * CELL + CELL / 2)
+                anchors.append(("room", f"{fid}/door/{r['room']}", a2,
+                                door_px[0], door_px[1], r["room"]))
+                label_px[r["room"]] = (float(r["x"]), float(r["y"]))
 
     forced = {a[2] for a in anchors}
     # 최대 요소만 남기고 나머지 조각은 버린다 (고립 경로 방지)
@@ -676,9 +708,10 @@ def build_floor(fname: str, fid: str, label: str, order: int, diag: bool = False
                     "aliases": [extra, f"{extra}호", f"미래관{extra}"],
                     "wing_id": None, "door_node_ids": [nid],
                     "status": "drawing_candidate",
-                    "label_plan_point": {"coordinate_space": f"plan:{fid}",
-                                         "x_px": round(pxx, 1),
-                                         "y_px": round(pyy, 1)},
+                    "label_plan_point": {
+                        "coordinate_space": f"plan:{fid}",
+                        "x_px": round(label_px.get(extra, (pxx, pyy))[0], 1),
+                        "y_px": round(label_px.get(extra, (pxx, pyy))[1], 1)},
                     "source_refs": REFS, "notes": []})
             else:
                 kindmap = {"elevator": ("elevator_lobby", None,
