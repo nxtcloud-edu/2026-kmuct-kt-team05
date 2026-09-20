@@ -442,7 +442,8 @@ export function findRoute(request: RouteRequest): RouteResult | ApiFailure {
     if (result) {
       appliedMode = 'fewest_stairs';
       warnings.push(
-        '계단을 전혀 쓰지 않는 경로를 찾지 못해 계단이 가장 적은 경로로 안내합니다.',
+        '계단이 없고 경사가 8% 이하인 무장애 경로를 찾지 못했습니다. ' +
+          '계단이 가장 적은 경로로 안내하지만 휠체어로는 통과하기 어려울 수 있습니다.',
       );
     }
   }

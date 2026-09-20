@@ -39,6 +39,12 @@ interface ModeWeights {
   elevatorWait: number;
   /** true 면 계단이 있는 엣지를 아예 쓰지 않는다 (하드 제약) */
   forbidStairs: boolean;
+  /**
+   * 통과 가능한 최대 경사 (하드 제약).
+   * 무장애 기준은 1:12 = 약 8.3% 다. 계단이 0이어도 20% 경사는 휠체어로 못 간다.
+   * 1 은 제한 없음.
+   */
+  maxSlope: number;
 }
 
 export const MODE_WEIGHTS: Record<TravelMode, ModeWeights> = {
@@ -51,6 +57,7 @@ export const MODE_WEIGHTS: Record<TravelMode, ModeWeights> = {
     outdoorRain: 0.2,
     elevatorWait: 35,
     forbidStairs: false,
+    maxSlope: 1,
   },
 
   // 계단 최소: 계단 1칸이 12m 걷기와 맞먹는다. 엘리베이터는 싸게 해준다.
@@ -62,9 +69,10 @@ export const MODE_WEIGHTS: Record<TravelMode, ModeWeights> = {
     outdoorRain: 0.2,
     elevatorWait: 18,
     forbidStairs: false,
+    maxSlope: 1,
   },
 
-  // 무장애: 계단은 아예 금지. 급경사도 강하게 회피한다.
+  // 무장애: 계단 금지 + 경사 상한. 계단이 0이어도 20% 경사는 휠체어로 못 간다.
   barrier_free: {
     stairUp: 0,
     stairDown: 0,
@@ -73,6 +81,8 @@ export const MODE_WEIGHTS: Record<TravelMode, ModeWeights> = {
     outdoorRain: 0.2,
     elevatorWait: 12,
     forbidStairs: true,
+    // 법정 기준 1:12(8.3%)에 실측 오차를 감안해 약간 여유를 뒀다
+    maxSlope: 0.1,
   },
 
   // 비 안 맞기: 실외 1m 마다 벌점. 비가 오면 훨씬 세게.
@@ -84,6 +94,7 @@ export const MODE_WEIGHTS: Record<TravelMode, ModeWeights> = {
     outdoorRain: 9,
     elevatorWait: 25,
     forbidStairs: false,
+    maxSlope: 1,
   },
 };
 
@@ -91,6 +102,7 @@ export const MODE_WEIGHTS: Record<TravelMode, ModeWeights> = {
 export function isEdgeAllowed(edge: EdgeLike, mode: TravelMode): boolean {
   const w = MODE_WEIGHTS[mode];
   if (w.forbidStairs && (edge.stairsUp > 0 || edge.stairsDown > 0)) return false;
+  if (edge.slope > w.maxSlope) return false;
   return true;
 }
 
