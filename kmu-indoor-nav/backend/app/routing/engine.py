@@ -395,16 +395,23 @@ def build_segments(ds: Dataset, path: list[Traversal]) -> list[dict]:
 
 
 def verify_result(path: list[Traversal], c: Constraints) -> list[str]:
-    """반환 전 하드 제약 재검증. 위반이 있으면 사유 목록을 돌려준다."""
+    """반환 전 하드 제약 재검증. 위반이 있으면 사유 목록을 돌려준다.
+
+    요구 근거 수준은 edge_block_reason 과 **같은 기준**을 써야 한다.
+    전역 상수를 쓰면, 필터가 통과시킨 엣지를 여기서 다시 막아
+    '경로를 찾았는데 재검증에서 폐기' 가 반복된다.
+    """
     bad: list[str] = []
     for tr in path:
         e = tr.edge
         if (c.no_stairs or c.wheelchair) and e.kind == EdgeKind.STAIRS:
             bad.append(f"{e.id}: 계단 금지 위반")
         if c.wheelchair and e.kind not in (EdgeKind.ELEVATOR_RIDE,):
+            level = e.accessibility_threshold(c.absolute_min_verification)
             miss = e.accessibility.unknown_fields(
                 ("clear_width_m",) if e.kind == EdgeKind.DOOR
-                else c.required_accessibility_fields
+                else c.required_accessibility_fields,
+                level,
             )
             if miss:
                 bad.append(f"{e.id}: 필수 속성 미검증 {miss}")

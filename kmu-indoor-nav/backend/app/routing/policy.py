@@ -77,6 +77,10 @@ class Constraints:
     #: 기본값을 drawing_inferred 로 두면, 실외처럼 현장 실측이 불가능한
     #: 파트도 '근거가 있기는 한' 속성만 통과한다.
     absolute_min_verification: Verification = Verification.DRAWING_INFERRED
+    #: 경사를 하드 차단할 최소 근거 수준.
+    #: 이 수준 미만의 '추정 경사'로는 통행 불가를 단정하지 않는다.
+    #: 도면 판독(drawing_read) 이상이어야 막는다. 추정값은 감점으로 처리한다.
+    slope_block_min_verification: Verification = Verification.DRAWING_READ
     #: 근거 없는 구간을 지나는 '조사용 후보 경로'를 허용할지.
     #: True 라도 결과 status 는 ok 가 아니라 candidate_unverified 이며,
     #: 조사 대상 구간 목록이 함께 반환된다. 기본값은 False 를 유지한다.
@@ -150,11 +154,20 @@ def edge_block_reason(edge: Edge, c: Constraints, closed: bool) -> Block | None:
         return BLOCK_UNVERIFIED
 
     # --- 휠체어: 관측값이 한계를 넘음 (비용으로 상쇄 불가) ---
+    #
+    # '관측값'만 하드 차단한다. 추정값으로 통행 불가를 단정하지 않는다.
+    # 실외 경사는 OSM 고도차와 제보에서 나온 추정이며, 짧은 구간을 과대평가하는
+    # 경우가 많다. 추정값으로 막으면 경사 캠퍼스 전체가 휠체어 경로에서
+    # 사라지는데, 그것은 현장 사실과 다르다.
+    # 추정 경사는 edge_preference_cost 에서 강하게 감점되고,
+    # 경로 응답의 estimated_max_slope_pct 로 사용자에게 보고된다.
+    slope_level = level if level.rank >= c.slope_block_min_verification.rank \
+        else c.slope_block_min_verification
     up = acc.slope_up_pct
-    if up.known_at_least(level) and float(up.value) > c.max_slope_up_pct:
+    if up.known_at_least(slope_level) and float(up.value) > c.max_slope_up_pct:
         return BLOCK_SLOPE
     dn = acc.slope_down_pct
-    if dn.known_at_least(level) and float(dn.value) > c.max_slope_down_pct:
+    if dn.known_at_least(slope_level) and float(dn.value) > c.max_slope_down_pct:
         return BLOCK_SLOPE
     w = acc.clear_width_m
     if w.known_at_least(level) and float(w.value) < c.min_clear_width_m:

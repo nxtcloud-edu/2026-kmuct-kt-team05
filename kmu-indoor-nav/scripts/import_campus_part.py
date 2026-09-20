@@ -552,6 +552,22 @@ def main() -> None:
                 kind = ("entrance" if node_building.get(other) == "OUTDOOR"
                         else "building_connector")
                 rec["kind"] = kind
+                # 종류가 계단에서 바뀌었다면 접근성 속성을 다시 채워야 한다.
+                # 계단으로 판단해 폭/문턱을 unknown 으로 둔 채 종류만 바꾸면,
+                # 휠체어 판정에서 이 링크가 통째로 막힌다.
+                if is_stair:
+                    fixed = {
+                        "stairs": attr(False, PART_EVIDENCE, src=[src_ref]),
+                        "slope_up_pct": attr(0.0, PART_EVIDENCE, unit="%",
+                                             src=[src_ref],
+                                             note="경사 근거 없음. 평탄 전제."),
+                        "slope_down_pct": attr(0.0, PART_EVIDENCE, unit="%",
+                                               src=[src_ref],
+                                               note="경사 근거 없음. 평탄 전제."),
+                        **access_assumed_attrs(src_ref),
+                    }
+                    rec["accessibility"] = fixed
+                    rec["accessibility_is_assumed"] = True
             # 링크 id 는 어느 파트 소유도 아니므로 'link/' 로 시작한다.
             rec["id"] = f"link/campus-mirae/{i}"
             rec["_mirae_legacy_node"] = legacy
