@@ -273,6 +273,8 @@ let manualNodeCount = 0;
 let manualEdgeCount = 0;
 /** { node, building, wing, floor } */
 const buildingLinks = [];
+/** 고도차가 있는데 계단 표시가 없어 자동으로 계단 처리한 구간 */
+const elevationJumps = [];
 
 const areaNodeKey = (areaId, nodeId) => `p_${areaId}_${nodeId}`;
 
@@ -310,15 +312,33 @@ for (const area of facts.outdoorAreas ?? []) {
     const pa = netXY.get(a);
     const pb = netXY.get(b);
     const distM = Math.max(2, Math.hypot(pa.x - pb.x, pa.y - pb.y) * METERS_PER_UNIT);
-    const steps = Number(e.steps) > 0;
-    netEdges.push({
-      a,
-      b,
-      distM,
-      steps,
-      stepCount: steps ? Number(e.steps) : 0,
-      note: e.note ?? area.name,
-    });
+
+    let steps = Number(e.steps) > 0;
+    let stepCount = steps ? Number(e.steps) : 0;
+    let note = e.note ?? area.name;
+
+    /**
+     * 안전장치: 고도를 명시한 두 노드를 '계단도 경사로도 아닌' 엣지로 이으면
+     * 존재하지 않는 평지 통로를 만드는 셈이다. 그러면 계단최소·무장애 모드가
+     * 실제로는 계단인 길을 '계단 0칸'으로 안내한다.
+     * 경사로가 맞다면 facts 에서 "ramp": true 를 명시해야 한다.
+     */
+    const ea = manualElevation.get(a);
+    const eb = manualElevation.get(b);
+    if (!steps && e.ramp !== true && ea !== undefined && eb !== undefined) {
+      const drop = Math.abs(ea - eb);
+      if (drop >= 1) {
+        steps = true;
+        stepCount = Math.round(drop * STEPS_PER_FLOOR);
+        note = `${note} · 고도차 ${drop}층을 계단으로 처리`;
+        elevationJumps.push(
+          `${area.id}: ${e.from}(${ea}) ↔ ${e.to}(${eb}) 고도차 ${drop}층인데 계단 표시가 없어 ` +
+            `계단 ${stepCount}칸으로 처리했습니다. 경사로라면 "ramp": true 를 넣으세요.`,
+        );
+      }
+    }
+
+    netEdges.push({ a, b, distM, steps, stepCount, note });
     manualEdgeCount += 1;
   }
 
@@ -334,6 +354,12 @@ for (const area of facts.outdoorAreas ?? []) {
 
 if (manualNodeCount > 0) {
   console.log(`직접 추가한 실외 노드 ${manualNodeCount}개, 엣지 ${manualEdgeCount}개`);
+}
+if (elevationJumps.length > 0) {
+  console.log('');
+  console.log(`⚠️ 고도차가 있는데 계단 표시가 없던 구간 ${elevationJumps.length}개:`);
+  for (const j of elevationJumps) console.log(`   ${j}`);
+  console.log('');
 }
 
 const netNodes = new Set(netXY.keys());
@@ -521,24 +547,43 @@ for (const [key, p] of netXY) {
 /* --- 4-2. 실외 엣지 --- */
 let steepestSlope = 0;
 let steepestNote = '';
+/** 경사가 너무 급해서 '계단일 수밖에 없다'고 판단한 엣지 */
+const impliedStairs = [];
+
 for (const e of netEdges) {
   const riseM = (elev.get(e.b) - elev.get(e.a)) * FLOOR_HEIGHT_M;
+  const rawSlope = Math.abs(riseM) / Math.max(e.distM, SLOPE_MIN_RUN_M);
+
+  /**
+   * OSM 에 계단 태그가 없어도, 고도차가 거리에 비해 너무 크면 실제로는 계단이다.
+   * (예: 복지관 4층 출입구와 1층 출입구의 실외 접점이 13m 거리인데 고도차 12m)
+   * 이걸 '완만한 경사'로 두면 무장애 경로가 물리적으로 불가능한 길을 타게 된다.
+   */
+  let steps = e.steps;
+  let stepCount = e.stepCount;
+  let note = e.note;
+  if (!steps && rawSlope > SLOPE_CAP) {
+    steps = true;
+    stepCount = Math.max(1, Math.round(Math.abs(riseM) / 0.17));
+    note = `경사 ${Math.round(rawSlope * 100)}% → 계단으로 판정 (OSM 미태깅, 칸수 추정)`;
+    impliedStairs.push(`${e.a} → ${e.b} ${Math.round(e.distM)}m 고도차 ${round2(riseM)}m → ${stepCount}칸`);
+  }
+
   // 계단 구간은 고도차를 '계단 칸수'로 이미 표현했다. 경사까지 매기면 이중 처벌이 된다.
-  const slope = e.steps
-    ? 0
-    : Math.min(Math.abs(riseM) / Math.max(e.distM, SLOPE_MIN_RUN_M), SLOPE_CAP);
+  const slope = steps ? 0 : Math.min(rawSlope, SLOPE_CAP);
   if (slope > steepestSlope) {
     steepestSlope = slope;
     steepestNote = `${e.a} → ${e.b} (${Math.round(e.distM)}m, 고도차 ${round2(riseM)}m)`;
   }
-  const stepTotal = e.steps ? Math.round(e.stepCount) : 0;
+
+  const stepTotal = steps ? Math.round(stepCount) : 0;
   addEdge(e.a, e.b, {
     distance: e.distM,
     stairsUp: riseM > 0 ? stepTotal : 0,
     stairsDown: riseM <= 0 ? stepTotal : 0,
     slope,
     indoor: false,
-    note: e.note,
+    note,
   });
 }
 
@@ -712,10 +757,16 @@ for (const g of groundEntries) {
   }
 }
 
-/* --- 4-10. 정보 없는 건물도 최소한 접근 가능하게 --- */
+/* --- 4-10. 정보 없는 건물도 최소한 접근 가능하게 ---
+ * ⚠️ outdoorAreas 로 출입구를 지정한 건물은 절대 건드리면 안 된다.
+ *    안 그러면 "가장 가까운 실외 노드"가 엉뚱한 높이의 길이어서
+ *    1층이 5층 높이 길에 평지로 붙는 사고가 난다.
+ */
+const linkedBuildings = new Set(buildingLinks.map((l) => l.building));
 let fallbackEntryCount = 0;
 for (const [name, b] of buildings) {
   if (groundEntries.some((g) => g.building === name)) continue;
+  if (linkedBuildings.has(name)) continue;
   let indoor = indoorId(name, null, 1);
   if (!indoor || !nodeIds.has(indoor)) {
     indoor = `${b.slug}_1f`;
@@ -821,6 +872,11 @@ console.log(
   `경사 15% 이상 실외 엣지 ${steepEdges.length}개 · 최대 경사 ${Math.round(steepestSlope * 100)}%`,
 );
 console.log(`  최대 경사 구간: ${steepestNote}`);
+if (impliedStairs.length > 0) {
+  console.log('');
+  console.log(`경사가 너무 급해 계단으로 판정한 실외 구간 ${impliedStairs.length}개:`);
+  for (const s of impliedStairs) console.log(`  ${s}`);
+}
 console.log('');
 console.log(`고도 앵커 ${anchorReasons.length}개:`);
 for (const r of anchorReasons) console.log(`  ${r}`);

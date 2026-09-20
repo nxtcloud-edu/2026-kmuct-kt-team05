@@ -1403,6 +1403,70 @@
       "searchable": false
     },
     {
+      "id": "p_plaza_mid_concert_front",
+      "building": "OUTDOOR",
+      "floor": 0,
+      "label": "콘서트홀 앞 (운동장 쪽)",
+      "kind": "outdoor",
+      "searchable": false
+    },
+    {
+      "id": "p_plaza_mid_intl_front",
+      "building": "OUTDOOR",
+      "floor": 0,
+      "label": "국제관 앞 (운동장 쪽)",
+      "kind": "outdoor",
+      "searchable": false
+    },
+    {
+      "id": "p_plaza_mid_econ_front",
+      "building": "OUTDOOR",
+      "floor": 0,
+      "label": "경상관 앞 (운동장 쪽)",
+      "kind": "outdoor",
+      "searchable": false
+    },
+    {
+      "id": "p_front_bukak_bukak_front",
+      "building": "OUTDOOR",
+      "floor": 0,
+      "label": "북악관 앞 (1층 높이)",
+      "kind": "outdoor",
+      "searchable": false
+    },
+    {
+      "id": "p_front_bukak_econ_5f",
+      "building": "OUTDOOR",
+      "floor": 0,
+      "label": "경상관 5층 출입구 (북악관 쪽)",
+      "kind": "outdoor",
+      "searchable": false
+    },
+    {
+      "id": "p_front_bukak_intl_5f",
+      "building": "OUTDOOR",
+      "floor": 0,
+      "label": "국제관 5층 출입구 (북악관 쪽)",
+      "kind": "outdoor",
+      "searchable": false
+    },
+    {
+      "id": "p_front_bukak_concert_5f",
+      "building": "OUTDOOR",
+      "floor": 0,
+      "label": "콘서트홀 5층 출입구 (북악관 쪽)",
+      "kind": "outdoor",
+      "searchable": false
+    },
+    {
+      "id": "p_front_bukak_biz_5f",
+      "building": "OUTDOOR",
+      "floor": 0,
+      "label": "경영관 5층 출입구 (북악관 쪽)",
+      "kind": "outdoor",
+      "searchable": false
+    },
+    {
       "id": "bukak_1f",
       "building": "북악관",
       "floor": 1,
@@ -10535,7 +10599,7 @@
       "distance": 40,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10546,7 +10610,7 @@
       "distance": 6,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.12,
+      "slope": 0.15,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10579,7 +10643,7 @@
       "distance": 34,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.01,
+      "slope": 0,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10601,7 +10665,7 @@
       "distance": 46,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.01,
+      "slope": 0,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10623,7 +10687,7 @@
       "distance": 32,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.01,
+      "slope": 0,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10634,7 +10698,7 @@
       "distance": 15,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10656,7 +10720,7 @@
       "distance": 12,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10667,7 +10731,7 @@
       "distance": 13,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10678,7 +10742,7 @@
       "distance": 15,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10689,7 +10753,7 @@
       "distance": 7,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.04,
+      "slope": 0.05,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10700,7 +10764,7 @@
       "distance": 17,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.02,
+      "slope": 0.03,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10711,7 +10775,7 @@
       "distance": 6,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.04,
+      "slope": 0.05,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10722,7 +10786,7 @@
       "distance": 55,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.05,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10733,7 +10797,7 @@
       "distance": 12,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.17,
+      "slope": 0.26,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10744,7 +10808,7 @@
       "distance": 16,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.12,
+      "slope": 0.19,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10755,7 +10819,7 @@
       "distance": 11,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.19,
+      "slope": 0.3,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10766,7 +10830,7 @@
       "distance": 49,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.04,
+      "slope": 0.06,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10777,7 +10841,7 @@
       "distance": 4,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.2,
+      "slope": 0.31,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10876,7 +10940,7 @@
       "distance": 14,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.13,
+      "slope": 0.24,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10887,7 +10951,7 @@
       "distance": 22,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.08,
+      "slope": 0.15,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10898,7 +10962,7 @@
       "distance": 33,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.05,
+      "slope": 0.1,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10909,7 +10973,7 @@
       "distance": 11,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.05,
+      "slope": 0.18,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10920,7 +10984,7 @@
       "distance": 10,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.06,
+      "slope": 0.19,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10931,7 +10995,7 @@
       "distance": 2,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.1,
+      "slope": 0.08,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10942,7 +11006,7 @@
       "distance": 42,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.01,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10953,7 +11017,7 @@
       "distance": 16,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.07,
+      "slope": 0.01,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -10964,7 +11028,7 @@
       "distance": 53,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.02,
+      "slope": 0.01,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11151,7 +11215,7 @@
       "distance": 6,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.01,
+      "slope": 0.07,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11162,7 +11226,7 @@
       "distance": 20,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.01,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11173,7 +11237,7 @@
       "distance": 34,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.01,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11184,7 +11248,7 @@
       "distance": 32,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.01,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11195,7 +11259,7 @@
       "distance": 18,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.01,
+      "slope": 0.05,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11206,7 +11270,7 @@
       "distance": 25,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.06,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11217,7 +11281,7 @@
       "distance": 52,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.02,
+      "slope": 0.01,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11228,7 +11292,7 @@
       "distance": 8,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.01,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11250,7 +11314,7 @@
       "distance": 22,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.05,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11261,7 +11325,7 @@
       "distance": 38,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.06,
+      "slope": 0,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11272,7 +11336,7 @@
       "distance": 15,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.1,
+      "slope": 0.11,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11283,7 +11347,7 @@
       "distance": 44,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.06,
+      "slope": 0.03,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11294,7 +11358,7 @@
       "distance": 16,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.2,
+      "slope": 0.06,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11453,7 +11517,7 @@
       "distance": 16,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.27,
+      "slope": 0.35,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11464,7 +11528,7 @@
       "distance": 69,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.06,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11475,7 +11539,7 @@
       "distance": 68,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.02,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11497,7 +11561,7 @@
       "distance": 57,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.01,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11508,7 +11572,7 @@
       "distance": 54,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.01,
+      "slope": 0.02,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11531,7 +11595,7 @@
       "distance": 8,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.02,
+      "slope": 0.06,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11542,7 +11606,7 @@
       "distance": 3,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.02,
+      "slope": 0.06,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11564,7 +11628,7 @@
       "distance": 8,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.04,
+      "slope": 0.15,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11623,7 +11687,7 @@
       "distance": 12,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.06,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11734,7 +11798,7 @@
       "distance": 29,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.06,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11745,7 +11809,7 @@
       "distance": 44,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.01,
+      "slope": 0.03,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11766,8 +11830,8 @@
       "from": "w5505732325",
       "to": "w5505732323",
       "distance": 9,
-      "stairsUp": 0,
-      "stairsDown": 18,
+      "stairsUp": 18,
+      "stairsDown": 0,
       "slope": 0,
       "indoor": false,
       "elevator": false,
@@ -11780,7 +11844,7 @@
       "distance": 30,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.1,
+      "slope": 0.03,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11801,8 +11865,8 @@
       "from": "w5505732326",
       "to": "w5505732322",
       "distance": 9,
-      "stairsUp": 0,
-      "stairsDown": 18,
+      "stairsUp": 18,
+      "stairsDown": 0,
       "slope": 0,
       "indoor": false,
       "elevator": false,
@@ -11815,7 +11879,7 @@
       "distance": 17,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11826,7 +11890,7 @@
       "distance": 18,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.02,
+      "slope": 0.03,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11837,7 +11901,7 @@
       "distance": 15,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11848,7 +11912,7 @@
       "distance": 18,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.02,
+      "slope": 0.03,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11859,7 +11923,7 @@
       "distance": 4,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.04,
+      "slope": 0.06,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11870,7 +11934,7 @@
       "distance": 8,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.06,
+      "slope": 0.12,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11892,7 +11956,7 @@
       "distance": 47,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.02,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11903,7 +11967,7 @@
       "distance": 35,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.03,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11914,7 +11978,7 @@
       "distance": 19,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.02,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11925,7 +11989,7 @@
       "distance": 21,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.02,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11936,7 +12000,7 @@
       "distance": 14,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.05,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11947,7 +12011,7 @@
       "distance": 11,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.21,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11958,7 +12022,7 @@
       "distance": 31,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.03,
+      "slope": 0.07,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11969,7 +12033,7 @@
       "distance": 7,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.06,
+      "slope": 0.16,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11980,7 +12044,7 @@
       "distance": 6,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.06,
+      "slope": 0.16,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -11991,7 +12055,7 @@
       "distance": 37,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.02,
+      "slope": 0.04,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -12014,7 +12078,7 @@
       "distance": 12,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0.01,
+      "slope": 0.1,
       "indoor": false,
       "elevator": false,
       "bidirectional": true
@@ -12092,22 +12156,24 @@
       "to": "w8973333046",
       "distance": 13,
       "stairsUp": 0,
-      "stairsDown": 0,
-      "slope": 0.35,
+      "stairsDown": 35,
+      "slope": 0,
       "indoor": false,
       "elevator": false,
-      "bidirectional": true
+      "bidirectional": true,
+      "note": "경사 45% → 계단으로 판정 (OSM 미태깅, 칸수 추정)"
     },
     {
       "from": "w8973333047",
       "to": "w8973333045",
       "distance": 13,
       "stairsUp": 0,
-      "stairsDown": 0,
-      "slope": 0.35,
+      "stairsDown": 35,
+      "slope": 0,
       "indoor": false,
       "elevator": false,
-      "bidirectional": true
+      "bidirectional": true,
+      "note": "경사 48% → 계단으로 판정 (OSM 미태깅, 칸수 추정)"
     },
     {
       "from": "w8973333048",
@@ -12185,7 +12251,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장 ↔ 기존 보행로 연결"
+      "note": "운동장 주변 광장 · 건물 앞 길 ↔ 기존 보행로 연결"
     },
     {
       "from": "p_plaza_mid_field_se",
@@ -12193,11 +12259,23 @@
       "distance": 19,
       "stairsUp": 0,
       "stairsDown": 0,
-      "slope": 0,
+      "slope": 0.03,
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장 ↔ 기존 보행로 연결"
+      "note": "운동장 주변 광장 · 건물 앞 길 ↔ 기존 보행로 연결"
+    },
+    {
+      "from": "p_plaza_mid_econ_front",
+      "to": "w5505697729",
+      "distance": 41,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0.05,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "운동장 주변 광장 · 건물 앞 길 ↔ 기존 보행로 연결"
     },
     {
       "from": "p_plaza_mid_welfare_way",
@@ -12209,7 +12287,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장"
+      "note": "운동장 주변 광장 · 건물 앞 길"
     },
     {
       "from": "p_plaza_mid_field_se",
@@ -12221,7 +12299,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장"
+      "note": "운동장 주변 광장 · 건물 앞 길"
     },
     {
       "from": "p_plaza_mid_field_se",
@@ -12233,7 +12311,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장"
+      "note": "운동장 주변 광장 · 건물 앞 길"
     },
     {
       "from": "p_plaza_mid_center",
@@ -12245,7 +12323,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장"
+      "note": "운동장 주변 광장 · 건물 앞 길"
     },
     {
       "from": "p_plaza_mid_center",
@@ -12257,7 +12335,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장"
+      "note": "운동장 주변 광장 · 건물 앞 길"
     },
     {
       "from": "p_plaza_mid_mirae_side",
@@ -12269,7 +12347,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장"
+      "note": "운동장 주변 광장 · 건물 앞 길"
     },
     {
       "from": "p_plaza_mid_center",
@@ -12281,7 +12359,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장"
+      "note": "운동장 주변 광장 · 건물 앞 길"
     },
     {
       "from": "p_plaza_mid_art_side",
@@ -12293,7 +12371,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장"
+      "note": "운동장 주변 광장 · 건물 앞 길"
     },
     {
       "from": "p_plaza_mid_stair_low",
@@ -12317,7 +12395,187 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장"
+      "note": "운동장 주변 광장 · 건물 앞 길"
+    },
+    {
+      "from": "p_plaza_mid_biz_side",
+      "to": "p_plaza_mid_concert_front",
+      "distance": 40,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "운동장 주변 광장 · 건물 앞 길"
+    },
+    {
+      "from": "p_plaza_mid_concert_front",
+      "to": "p_plaza_mid_intl_front",
+      "distance": 36,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "운동장 주변 광장 · 건물 앞 길"
+    },
+    {
+      "from": "p_plaza_mid_intl_front",
+      "to": "p_plaza_mid_econ_front",
+      "distance": 42,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "운동장 주변 광장 · 건물 앞 길"
+    },
+    {
+      "from": "p_plaza_mid_concert_front",
+      "to": "p_plaza_mid_center",
+      "distance": 40,
+      "stairsUp": 0,
+      "stairsDown": 24,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "콘서트홀 앞 → 공터 계단"
+    },
+    {
+      "from": "p_plaza_mid_concert_front",
+      "to": "p_plaza_mid_art_side",
+      "distance": 47,
+      "stairsUp": 0,
+      "stairsDown": 24,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "콘서트홀 앞 → 예술관 앞 계단"
+    },
+    {
+      "from": "p_plaza_mid_intl_front",
+      "to": "p_plaza_mid_field_se",
+      "distance": 48,
+      "stairsUp": 0,
+      "stairsDown": 24,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "국제관 앞 → 운동장 계단"
+    },
+    {
+      "from": "p_plaza_mid_econ_front",
+      "to": "p_plaza_mid_welfare_way",
+      "distance": 76,
+      "stairsUp": 0,
+      "stairsDown": 24,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "경상관 앞 → 복지관 가는 길 계단"
+    },
+    {
+      "from": "p_front_bukak_bukak_front",
+      "to": "w5505732323",
+      "distance": 14,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0.15,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길 ↔ 기존 보행로 연결"
+    },
+    {
+      "from": "p_front_bukak_econ_5f",
+      "to": "w5505697732",
+      "distance": 21,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0.18,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길 ↔ 기존 보행로 연결"
+    },
+    {
+      "from": "p_front_bukak_biz_5f",
+      "to": "w5937708499",
+      "distance": 5,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0.3,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길 ↔ 기존 보행로 연결"
+    },
+    {
+      "from": "p_front_bukak_bukak_front",
+      "to": "p_front_bukak_econ_5f",
+      "distance": 33,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길"
+    },
+    {
+      "from": "p_front_bukak_bukak_front",
+      "to": "p_front_bukak_intl_5f",
+      "distance": 62,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길"
+    },
+    {
+      "from": "p_front_bukak_econ_5f",
+      "to": "p_front_bukak_intl_5f",
+      "distance": 58,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길"
+    },
+    {
+      "from": "p_front_bukak_intl_5f",
+      "to": "p_front_bukak_concert_5f",
+      "distance": 39,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길"
+    },
+    {
+      "from": "p_front_bukak_concert_5f",
+      "to": "p_front_bukak_biz_5f",
+      "distance": 37,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길"
     },
     {
       "from": "bukak_1f",
@@ -15221,7 +15479,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장 출입"
+      "note": "운동장 주변 광장 · 건물 앞 길 출입"
     },
     {
       "from": "art_1f",
@@ -15233,7 +15491,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장 출입"
+      "note": "운동장 주변 광장 · 건물 앞 길 출입"
     },
     {
       "from": "biz_1f",
@@ -15245,7 +15503,103 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장 출입"
+      "note": "운동장 주변 광장 · 건물 앞 길 출입"
+    },
+    {
+      "from": "concert_1f",
+      "to": "p_plaza_mid_concert_front",
+      "distance": 12,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "운동장 주변 광장 · 건물 앞 길 출입"
+    },
+    {
+      "from": "intl_1f",
+      "to": "p_plaza_mid_intl_front",
+      "distance": 12,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "운동장 주변 광장 · 건물 앞 길 출입"
+    },
+    {
+      "from": "econ_1f",
+      "to": "p_plaza_mid_econ_front",
+      "distance": 12,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "운동장 주변 광장 · 건물 앞 길 출입"
+    },
+    {
+      "from": "bukak_1f",
+      "to": "p_front_bukak_bukak_front",
+      "distance": 12,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길 출입"
+    },
+    {
+      "from": "econ_5f",
+      "to": "p_front_bukak_econ_5f",
+      "distance": 12,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길 출입"
+    },
+    {
+      "from": "intl_5f",
+      "to": "p_front_bukak_intl_5f",
+      "distance": 12,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길 출입"
+    },
+    {
+      "from": "concert_5f",
+      "to": "p_front_bukak_concert_5f",
+      "distance": 12,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길 출입"
+    },
+    {
+      "from": "biz_5f",
+      "to": "p_front_bukak_biz_5f",
+      "distance": 12,
+      "stairsUp": 0,
+      "stairsDown": 0,
+      "slope": 0,
+      "indoor": false,
+      "elevator": false,
+      "bidirectional": true,
+      "note": "북악관 쪽 건물 앞 길 출입"
     },
     {
       "from": "welfare_4f",
@@ -15270,54 +15624,6 @@
       "elevator": false,
       "bidirectional": true,
       "note": "미래관 신관 쪽 바깥 길 출입구"
-    },
-    {
-      "from": "biz_1f",
-      "to": "w4313757512",
-      "distance": 6,
-      "stairsUp": 0,
-      "stairsDown": 0,
-      "slope": 0,
-      "indoor": false,
-      "elevator": false,
-      "bidirectional": true,
-      "note": "경영관 앞 지면 (북쪽) 출입구"
-    },
-    {
-      "from": "econ_1f",
-      "to": "w5505732324",
-      "distance": 16,
-      "stairsUp": 0,
-      "stairsDown": 0,
-      "slope": 0,
-      "indoor": false,
-      "elevator": false,
-      "bidirectional": true,
-      "note": "경상관 앞 지면 출입구"
-    },
-    {
-      "from": "intl_1f",
-      "to": "w5404888273",
-      "distance": 28,
-      "stairsUp": 0,
-      "stairsDown": 0,
-      "slope": 0,
-      "indoor": false,
-      "elevator": false,
-      "bidirectional": true,
-      "note": "국제관 앞 지면 출입구"
-    },
-    {
-      "from": "concert_1f",
-      "to": "w5404888273",
-      "distance": 17,
-      "stairsUp": 0,
-      "stairsDown": 0,
-      "slope": 0,
-      "indoor": false,
-      "elevator": false,
-      "bidirectional": true,
-      "note": "콘서트홀 앞 지면 출입구"
     },
     {
       "from": "bukak_1f",
@@ -15476,18 +15782,6 @@
       "note": "출입구 위치 미확인 (건물 중심 기준)"
     },
     {
-      "from": "art_1f",
-      "to": "w4313757493",
-      "distance": 31,
-      "stairsUp": 0,
-      "stairsDown": 0,
-      "slope": 0,
-      "indoor": false,
-      "elevator": false,
-      "bidirectional": true,
-      "note": "출입구 위치 미확인 (건물 중심 기준)"
-    },
-    {
       "from": "dorm_1f",
       "to": "w4687105556",
       "distance": 13,
@@ -15581,7 +15875,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장 출입 | 실내 그래프 연결 (mirae_old_4f -> mirae_F4_entrance_1)"
+      "note": "운동장 주변 광장 · 건물 앞 길 출입 | 실내 그래프 연결 (mirae_old_4f -> mirae_F4_entrance_1)"
     },
     {
       "from": "mirae_F4_entrance_1",
@@ -15593,7 +15887,7 @@
       "indoor": false,
       "elevator": false,
       "bidirectional": true,
-      "note": "예술관·미래관·경영관 사이 광장 출입 | 실내 그래프 연결 (mirae_new_4f -> mirae_F4_entrance_1)"
+      "note": "운동장 주변 광장 · 건물 앞 길 출입 | 실내 그래프 연결 (mirae_new_4f -> mirae_F4_entrance_1)"
     },
     {
       "from": "mirae_F4_entrance_1",

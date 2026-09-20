@@ -442,7 +442,8 @@ export function findRoute(request: RouteRequest): RouteResult | ApiFailure {
     if (result) {
       appliedMode = 'fewest_stairs';
       warnings.push(
-        '계단을 전혀 쓰지 않는 경로를 찾지 못해 계단이 가장 적은 경로로 안내합니다.',
+        '계단이 없고 경사가 8% 이하인 무장애 경로를 찾지 못했습니다. ' +
+          '계단이 가장 적은 경로로 안내하지만 휠체어로는 통과하기 어려울 수 있습니다.',
       );
     }
   }
@@ -458,5 +459,15 @@ export function findRoute(request: RouteRequest): RouteResult | ApiFailure {
     `경사와 건물 내 계단 칸수는 층고 ${GRAPH.assumptions.floorHeightM}m 가정으로 계산한 추정값입니다.`,
   );
 
-  return assemble(request, result, appliedMode, warnings);
+  const route = assemble(request, result, appliedMode, warnings);
+
+  // 무장애 경로라도 법정 기준(1:12 = 8.3%)을 넘는 경사가 섞일 수 있다. 숨기지 말고 알린다.
+  if (appliedMode === 'barrier_free' && route.summary.maxSlope > 0.083) {
+    route.warnings.push(
+      `경사 ${Math.round(route.summary.maxSlope * 100)}% 구간이 포함되어 있습니다. ` +
+        '무장애 설계 기준(1:12, 약 8.3%)을 넘으므로 휠체어 이용 시 도움이 필요할 수 있습니다.',
+    );
+  }
+
+  return route;
 }

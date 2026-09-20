@@ -44,7 +44,10 @@
       "예술관 2F(+1) = 경상관·국제관·콘서트홀·경영관 1F = 미래관 5F = 복지관 5F",
       "북악관 1F(+5) = 경상관·국제관·콘서트홀·경영관 5F",
       "북악관 1F 은 미래관 최상층(7F, +3)보다 2개 층 더 높다",
-      "정문(-2) → 북악관 1F(+5) = 7개 층만큼 올라간다. 이게 캠퍼스 최대 경사 구간이다."
+      "정문(-2) → 북악관 1F(+5) = 7개 층만큼 올라간다. 이게 캠퍼스 최대 경사 구간이다.",
+      "경상관·국제관·콘서트홀·경영관은 경사면에 박혀 있어 양쪽에서 지면과 만난다.",
+      "  1층 = 운동장 쪽 (고도 +1),  5층 = 북악관 쪽 (고도 +5)",
+      "  → 이 건물들의 엘리베이터가 사실상 '캠퍼스 경사를 오르는 엘리베이터' 역할을 한다."
     ]
   },
 
@@ -303,8 +306,8 @@
   "outdoorAreas": [
     {
       "id": "plaza_mid",
-      "name": "예술관·미래관·경영관 사이 광장",
-      "note": "사람이 자유롭게 다니는 열린 공간. 운동장에서 복지관까지 이어진다. 광장 안에 외부 계단이 있어 미래관 4층(=예술관 1층) 높이에서 경영관 1층 높이로 올라갈 수 있다.",
+      "name": "운동장 주변 광장 · 건물 앞 길",
+      "note": "사람이 자유롭게 다니는 열린 공간. 두 개의 높이로 되어 있다. 아래(고도 0)는 운동장·미래관 4층·예술관 1층·복지관 4층이 만나는 광장이고, 위(고도 +1)는 경상관·국제관·콘서트홀·경영관의 1층 출입구가 나란히 있는 건물 앞 길이다. 둘은 광장 외부 계단으로 이어진다.",
       "nodes": [
         { "id": "welfare_way", "x": 520, "y": 452, "elevation": 0, "label": "복지관 가는 길", "linkOsm": true },
         { "id": "field_se", "x": 568, "y": 460, "elevation": 0, "label": "운동장 남동쪽", "linkOsm": true },
@@ -313,7 +316,11 @@
         { "id": "art_side", "x": 640, "y": 470, "elevation": 0, "label": "예술관 앞 (1층 높이)" },
         { "id": "stair_low", "x": 614, "y": 452, "elevation": 0, "label": "광장 계단 아래" },
         { "id": "stair_high", "x": 632, "y": 442, "elevation": 1, "label": "광장 계단 위" },
-        { "id": "biz_side", "x": 648, "y": 448, "elevation": 1, "label": "경영관 앞 (1층 높이)" }
+        { "id": "biz_side", "x": 648, "y": 448, "elevation": 1, "label": "경영관 앞 (1층 높이)" },
+
+        { "id": "concert_front", "x": 600, "y": 405, "elevation": 1, "label": "콘서트홀 앞 (운동장 쪽)" },
+        { "id": "intl_front", "x": 545, "y": 385, "elevation": 1, "label": "국제관 앞 (운동장 쪽)" },
+        { "id": "econ_front", "x": 505, "y": 330, "elevation": 1, "label": "경상관 앞 (운동장 쪽)", "linkOsm": true }
       ],
       "//edges": "열린 공간이므로 서로 촘촘히 잇는다. 사람은 실제로 직선으로 가로지른다.",
       "edges": [
@@ -326,14 +333,55 @@
         { "from": "center", "to": "stair_low" },
         { "from": "art_side", "to": "stair_low" },
         { "from": "stair_low", "to": "stair_high", "steps": 24, "note": "광장 외부 계단 (한 층)" },
-        { "from": "stair_high", "to": "biz_side" }
+        { "from": "stair_high", "to": "biz_side" },
+
+        { "//": "건물 앞 길 (고도 +1). 네 건물의 1층 출입구가 나란히 이어진다.", "from": "biz_side", "to": "concert_front" },
+        { "from": "concert_front", "to": "intl_front" },
+        { "from": "intl_front", "to": "econ_front" },
+
+        { "//2": "건물 앞 길(+1)에서 공터(0)로 내려가는 길. 한 층 낙차이고 계단이다. 절대 경사로로 두면 안 된다 — 계단최소·무장애 모드가 계단 24칸짜리 길을 0칸으로 안내하게 된다.",
+          "//2b": "⚠️ 계단 위치를 네 곳으로 가정했다. 실제로 어디에 있는지 확인이 필요하다 (openQuestions 참고).",
+          "from": "concert_front", "to": "center", "steps": 24, "note": "콘서트홀 앞 → 공터 계단" },
+        { "from": "concert_front", "to": "art_side", "steps": 24, "note": "콘서트홀 앞 → 예술관 앞 계단" },
+        { "from": "intl_front", "to": "field_se", "steps": 24, "note": "국제관 앞 → 운동장 계단" },
+        { "from": "econ_front", "to": "welfare_way", "steps": 24, "note": "경상관 앞 → 복지관 가는 길 계단" }
       ],
       "buildingLinks": [
         { "node": "welfare_way", "building": "종합복지관", "floor": 4 },
         { "node": "mirae_side", "building": "미래관", "wing": "구관", "floor": 4 },
         { "node": "mirae_side", "building": "미래관", "wing": "신관", "floor": 4 },
         { "node": "art_side", "building": "예술관", "floor": 1 },
-        { "node": "biz_side", "building": "경영관", "floor": 1 }
+        { "node": "biz_side", "building": "경영관", "floor": 1 },
+        { "node": "concert_front", "building": "콘서트홀", "floor": 1 },
+        { "node": "intl_front", "building": "국제관", "floor": 1 },
+        { "node": "econ_front", "building": "경상관", "floor": 1 }
+      ]
+    },
+    {
+      "id": "front_bukak",
+      "name": "북악관 쪽 건물 앞 길",
+      "note": "경사면에 박힌 건물들이라 위쪽으로도 지면과 만난다. 경상관·국제관·콘서트홀·경영관의 5층이 이 높이(고도 +5)에서 바깥으로 나오고, 북악관 1층과 같은 높이다. 같은 건물의 1층은 반대편 운동장 쪽(고도 +1)으로 나온다.",
+      "nodes": [
+        { "id": "bukak_front", "x": 545, "y": 205, "elevation": 5, "label": "북악관 앞 (1층 높이)", "linkOsm": true },
+        { "id": "econ_5f", "x": 505, "y": 240, "elevation": 5, "label": "경상관 5층 출입구 (북악관 쪽)", "linkOsm": true },
+        { "id": "intl_5f", "x": 578, "y": 300, "elevation": 5, "label": "국제관 5층 출입구 (북악관 쪽)" },
+        { "id": "concert_5f", "x": 620, "y": 347, "elevation": 5, "label": "콘서트홀 5층 출입구 (북악관 쪽)" },
+        { "id": "biz_5f", "x": 678, "y": 365, "elevation": 5, "label": "경영관 5층 출입구 (북악관 쪽)", "linkOsm": true }
+      ],
+      "//edges": "북악관 1층과 네 건물 5층이 같은 높이라 이 길은 평지다. 중간에 계단이 있다면 steps 를 넣어야 한다.",
+      "edges": [
+        { "//": "북악관 앞에서 경상관·국제관 양쪽으로 갈라진다. 한쪽으로만 이으면 모든 경로가 경상관을 돌아간다.", "from": "bukak_front", "to": "econ_5f" },
+        { "from": "bukak_front", "to": "intl_5f" },
+        { "from": "econ_5f", "to": "intl_5f" },
+        { "from": "intl_5f", "to": "concert_5f" },
+        { "from": "concert_5f", "to": "biz_5f" }
+      ],
+      "buildingLinks": [
+        { "node": "bukak_front", "building": "북악관", "floor": 1 },
+        { "node": "econ_5f", "building": "경상관", "floor": 5 },
+        { "node": "intl_5f", "building": "국제관", "floor": 5 },
+        { "node": "concert_5f", "building": "콘서트홀", "floor": 5 },
+        { "node": "biz_5f", "building": "경영관", "floor": 5 }
       ]
     }
   ],
@@ -344,11 +392,8 @@
     { "building": "미래관", "floor": 1, "to": "신관 1층 통로 (바깥)", "wing": "신관", "x": 640, "y": 624 },
     { "building": "종합복지관", "floor": 4, "to": "운동장", "x": 420, "y": 420 },
     { "building": "종합복지관", "floor": 1, "to": "미래관 신관 쪽 바깥 길", "x": 378, "y": 538 },
-    { "building": "경영관", "floor": 1, "to": "경영관 앞 지면 (북쪽)", "x": 700, "y": 392 },
-    { "building": "경상관", "floor": 1, "to": "경상관 앞 지면", "x": 505, "y": 260 },
-    { "building": "국제관", "floor": 1, "to": "국제관 앞 지면", "x": 578, "y": 318 },
-    { "building": "콘서트홀", "floor": 1, "to": "콘서트홀 앞 지면", "x": 620, "y": 356 },
-    { "building": "북악관", "floor": 1, "to": "북악관 앞 지면" },
+    { "//": "경상관·국제관·콘서트홀·경영관의 실외 접점은 outdoorAreas 로 관리한다. 1층은 운동장 쪽(고도 +1), 5층은 북악관 쪽(고도 +5).",
+      "building": "북악관", "floor": 1, "to": "북악관 앞 지면" },
     {
       "building": "공학관",
       "floor": 1,
@@ -384,6 +429,9 @@
 
   "//8": "── 남은 확인 사항 ──────────────────────────────────────",
   "openQuestions": [
+    "★ 건물 앞 도로(+1)에서 공터(0)로 내려가는 계단이 실제로 어디에 몇 개 있나? 현재 네 곳(콘서트홀 앞→공터, 콘서트홀 앞→예술관 앞, 국제관 앞→운동장, 경상관 앞→복지관 길)을 가정했다. 실제로 경영관 쪽 하나뿐이면 나머지를 지워야 한다.",
+    "★ 그 계단들의 실제 칸수 (현재 한 층=24칸으로 역산)",
+    "★ 계단 말고 경사로나 엘리베이터로 공터와 도로를 잇는 곳이 있나? 있다면 그게 유일한 무장애 경로가 된다.",
     "층고 실측값 (현재 4.0m 로 가정하고 모든 고도·경사를 계산하고 있다)",
     "공학관·산학협력관의 지면 고도 (현재 실외 지형 보간값에서 역산 중)",
     "공학관 최상층이 5층인지 (엘리베이터가 5층까지라는 것만 알고 있다)",

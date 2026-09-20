@@ -110,11 +110,15 @@ class TraversalFilter:
         # 엘리베이터는 시설 속성으로 별도 판정 (승강기 객체가 필요)
         if reason is None and edge.kind == EdgeKind.ELEVATOR_RIDE and self.c.wheelchair:
             ev = self.ds.elevators.get(edge.facility_id or "")
+            # 요구 근거 수준은 엣지(파트)가 선언한 값을 따른다.
+            # 전역 상수를 직접 쓰면 실외 파트가 낮춰 선언한 수준이 무시되어
+            # 승강기만 전부 차단된다.
+            level = edge.accessibility_threshold(self.c.absolute_min_verification)
             if ev is None:
                 reason = BLOCK_CLOSED
             elif ev.wheelchair_usable.is_known and ev.wheelchair_usable.value is False:
                 reason = BLOCK_WHEELCHAIR_FLAG
-            elif not ev.wheelchair_usable.known_at_least(MIN_VERIFICATION_FOR_ACCESSIBILITY):
+            elif not ev.wheelchair_usable.known_at_least(level):
                 reason = BLOCK_UNVERIFIED
             elif not ev.served_floors_evidence.is_known:
                 reason = BLOCK_UNVERIFIED
@@ -335,6 +339,20 @@ def summarize(ds: Dataset, path: list[Traversal], tf: TraversalFilter) -> dict:
         "observed_max_slope_pct": round(max(observed_slopes), 2) if observed_slopes else None,
         "estimated_max_slope_pct": round(max(estimated_slopes), 2) if estimated_slopes else None,
         "unverified_segments": unverified_segments,
+        # 길이가 가정 상수인 구간. 거리·시간이 이 값에 의존한다는 사실을
+        # 숨기지 않는다. 이런 구간이 많은 경로는 실측 기반 경로보다 신뢰도가 낮다.
+        "assumed_length_segments": sum(
+            1 for tr in path if tr.edge.length_is_assumed),
+        "assumed_length_m": round(sum(
+            float(tr.edge.horizontal_length_m.value)
+            for tr in path
+            if tr.edge.length_is_assumed
+            and tr.edge.horizontal_length_m.is_known), 1),
+        # 접근성이 '전제값'인 구간. 확인된 접근성과 구분해 보고한다.
+        "assumed_accessibility_segments": sum(
+            1 for tr in path if tr.edge.accessibility_is_assumed),
+        "accessibility_fully_verified": not any(
+            tr.edge.accessibility_is_assumed for tr in path),
         "floors_touched": floors_touched,
     }
 
@@ -569,6 +587,23 @@ def route(
 MERGEABLE = {EdgeKind.CORRIDOR, EdgeKind.OUTDOOR_WALK, EdgeKind.BUILDING_CONNECTOR}
 
 
+def _way_word(kinds: set[EdgeKind]) -> str:
+    """합쳐진 보행 구간을 무엇이라 부를지.
+
+    실외 보행로를 '복도'라고 안내하면 사용자가 건물 안을 찾는다.
+    섞였으면 어느 한쪽으로 단정하지 않고 '길'이라 한다.
+    """
+    if kinds == {EdgeKind.OUTDOOR_WALK}:
+        return "보행로"
+    if kinds == {EdgeKind.CORRIDOR}:
+        return "복도"
+    if kinds == {EdgeKind.BUILDING_CONNECTOR}:
+        return "연결통로"
+    if kinds <= {EdgeKind.CORRIDOR, EdgeKind.BUILDING_CONNECTOR}:
+        return "실내 통로"
+    return "길"
+
+
 def instructions(ds: Dataset, path: list[Traversal]) -> list[dict]:
     """단계 안내. 템플릿 기반이며 LLM 이 내용을 바꾸지 않는다.
 
@@ -593,31 +628,38 @@ def instructions(ds: Dataset, path: list[Traversal]) -> list[dict]:
         a, b = ds.nodes[e.from_node], ds.nodes[e.to_node]
 
         if e.kind in MERGEABLE:
-            # 같은 층의 연속 복도를 하나로 합친다
+            # 같은 층의 연속 보행 구간을 하나로 합친다.
+            # 실내 복도·실외 보행로·건물 연결통로를 함께 합치므로,
+            # 어떤 종류가 섞였는지 기록해 안내 문구를 맞춘다.
+            # (실외 보행로를 '복도'라고 안내하면 안 된다)
             j = i
             dist = 0.0
             secs = 0.0
+            kinds: set[EdgeKind] = set()
             while j < n:
                 ej = path[j].edge
                 nj = ds.nodes[ej.to_node]
                 if ej.kind not in MERGEABLE or nj.floor_id != b.floor_id:
                     break
+                kinds.add(ej.kind)
                 dist += edge_len(ej)
                 secs += path[j].time_s or 0.0
                 last = nj
                 j += 1
             if j == i:              # 안전장치
                 j = i + 1
+                kinds = {e.kind}
                 dist = edge_len(e)
                 secs = tr.time_s or 0.0
                 last = b
             if dist < 0.6:          # 0.6 m 미만은 안내하지 않는다
                 i = j
                 continue
-            dest = last.name or _nearby_name(ds, last) or "복도"
+            way = _way_word(kinds)
+            dest = last.name or _nearby_name(ds, last) or way
             out.append({
                 "edge_id": path[i].edge.id,
-                "text": f"복도를 따라 약 {dist:.0f} m 이동 ({dest} 방향)",
+                "text": f"{way}를 따라 약 {dist:.0f} m 이동 ({dest} 방향)",
                 "floor_id": last.floor_id, "floor_label": floor_label(last.floor_id),
                 "confirm_prompt": None, "time_s": round(secs, 1),
                 "distance_m": round(dist, 1),

@@ -27,6 +27,7 @@ from ..models.schema import (
     Node,
     NodeKind,
     Place,
+    Verification,
     PlaceStatus,
     PlanPoint,
     validate_dataset,
@@ -191,6 +192,12 @@ def _edge_from_json(d: dict) -> Edge:
         elevator_from_floor=d.get("elevator_from_floor"),
         elevator_to_floor=d.get("elevator_to_floor"),
         source_refs=d.get("source_refs", []), notes=d.get("notes", []),
+        min_accessibility_verification=(
+            Verification(d["min_accessibility_verification"])
+            if d.get("min_accessibility_verification") else None),
+        length_is_assumed=bool(d.get("length_is_assumed", False)),
+        accessibility_is_assumed=bool(
+            d.get("accessibility_is_assumed", False)),
     )
 
 

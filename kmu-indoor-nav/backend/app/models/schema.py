@@ -379,6 +379,19 @@ class Edge:
     #: 정책이 절대 하한으로 다시 제한하므로, 데이터가 이 값을 낮춰도
     #: unknown 을 통행 가능으로 만들 수는 없다.
     min_accessibility_verification: "Verification | None" = None
+    #: 이 엣지의 길이가 '가정 상수'인가.
+    #: 팀원 그래프의 assumptions(층고 4m, 연결 35m, 계단 20m 등)처럼
+    #: 실측도 OSM 도 아닌 값이면 True 다.
+    #: 시간 계산에는 그대로 쓰지만(다른 근거가 없다), 경로 선택에서는
+    #: 실측 기반 구간보다 후순위로 둔다. 근거 없는 상수를 여러 개 더해
+    #: 만든 지름길이 실측 경로를 이기면 존재하지 않는 길을 안내하게 된다.
+    length_is_assumed: bool = False
+    #: 이 엣지의 접근성 속성(폭/문턱/경사)이 '전제값'인가.
+    #: 현장 실측이 아니라 '여기는 통행 가능하다'는 판단을 근거로 기록한 값이면
+    #: True 다. 휠체어 경로가 이런 구간을 지나면 경로 응답의
+    #: assumed_accessibility_segments 에 집계되어 사용자에게 보고된다.
+    #: '확인된 접근성'과 '전제된 접근성'을 섞어 보고하지 않기 위한 장치다.
+    accessibility_is_assumed: bool = False
 
     def accessibility_threshold(self, absolute_floor: "Verification") -> "Verification":
         """실제로 적용할 최소 검증 수준.
@@ -412,6 +425,8 @@ class Edge:
             "min_accessibility_verification":
                 self.min_accessibility_verification.value
                 if self.min_accessibility_verification else None,
+            "length_is_assumed": self.length_is_assumed,
+            "accessibility_is_assumed": self.accessibility_is_assumed,
         }
 
 
@@ -537,11 +552,12 @@ def validate_dataset(
                 raise SchemaError(f"edge {e.id}: 알 수 없는 노드 {ref}")
         a, b = nodes[e.from_node], nodes[e.to_node]
         # 층을 넘어도 되는 엣지: 수직 이동 시설, 출입구,
-        # 그리고 건물 간 연결통로(브리지/지하연결). 연결통로는 본질적으로
-        # 서로 다른 건물의 서로 다른 층을 잇는다. 경사 캠퍼스에서는
-        # A동 1층과 B동 지하1층이 같은 높이에서 만나는 일이 흔하다.
+        # 건물 간 연결통로, 그리고 경사로.
+        # 경사로는 층을 넘을 수 있다 (지하로 내려가는 램프, 경사 지형의
+        # 완만한 연결). 다만 수직 시설이 아니므로 보행 경사 집계에는
+        # 그대로 포함된다 — 경사로는 실제로 사람이 걷는 면이다.
         if e.kind not in VERTICAL_EDGE_KINDS and e.kind not in (
-                EdgeKind.ENTRANCE, EdgeKind.BUILDING_CONNECTOR):
+                EdgeKind.ENTRANCE, EdgeKind.BUILDING_CONNECTOR, EdgeKind.RAMP):
             if a.floor_id != b.floor_id:
                 raise SchemaError(
                     f"edge {e.id}({e.kind.value}): 서로 다른 층을 직접 연결 "

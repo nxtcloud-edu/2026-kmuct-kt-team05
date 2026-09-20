@@ -15,12 +15,12 @@
  },
  "links": [
   {
-   "id": "link/campus-mirae/462",
-   "from_node": "mirae/F2/entrance/1",
+   "id": "link/campus-mirae/478",
+   "from_node": "mirae/F2/ev/1/lobby",
    "to_node": "campus/welfare_2f",
    "kind": "building_connector",
    "horizontal_length_m": {
-    "value": 35.0,
+    "value": 46.0,
     "verification": "drawing_inferred",
     "unit": "m",
     "source_refs": [
@@ -35,35 +35,65 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_welfare_indoor",
-    "팀원 그래프의 mirae_old_2f(미래관 2층) 연결을 우리 실내 노드로 재부착했다."
+    "거리 35m 는 팀원 assumptions 의 connectionM 상수이며 실측이 아니다.",
+    "층 단위 건물 실내 보행 허용치 11m 를 더했다 (elevatorAccessM 22m 의 절반씩). 건물 한 층이 노드 하나라 통과 거리가 0 으로 계산되는 것을 보정한다.",
+    "팀원 그래프의 mirae_old_2f(미래관 2층) 연결을 우리 실내 노드로 재부착했다 (실내 연결 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_old_2f",
    "_mirae_floor": 2
   },
   {
-   "id": "link/campus-mirae/462/rev",
+   "id": "link/campus-mirae/478/rev",
    "from_node": "campus/welfare_2f",
-   "to_node": "mirae/F2/entrance/1",
+   "to_node": "mirae/F2/ev/1/lobby",
    "kind": "building_connector",
    "horizontal_length_m": {
-    "value": 35.0,
+    "value": 46.0,
     "verification": "drawing_inferred",
     "unit": "m",
     "source_refs": [
@@ -78,35 +108,65 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_welfare_indoor",
-    "팀원 그래프의 mirae_old_2f(미래관 2층) 연결을 우리 실내 노드로 재부착했다."
+    "거리 35m 는 팀원 assumptions 의 connectionM 상수이며 실측이 아니다.",
+    "층 단위 건물 실내 보행 허용치 11m 를 더했다 (elevatorAccessM 22m 의 절반씩). 건물 한 층이 노드 하나라 통과 거리가 0 으로 계산되는 것을 보정한다.",
+    "팀원 그래프의 mirae_old_2f(미래관 2층) 연결을 우리 실내 노드로 재부착했다 (실내 연결 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_old_2f",
    "_mirae_floor": 2
   },
   {
-   "id": "link/campus-mirae/463",
-   "from_node": "mirae/F3/entrance/1",
+   "id": "link/campus-mirae/479",
+   "from_node": "mirae/F3/ev/1/lobby",
    "to_node": "campus/welfare_3f",
    "kind": "building_connector",
    "horizontal_length_m": {
-    "value": 35.0,
+    "value": 46.0,
     "verification": "drawing_inferred",
     "unit": "m",
     "source_refs": [
@@ -121,35 +181,65 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_welfare_indoor",
-    "팀원 그래프의 mirae_old_3f(미래관 3층) 연결을 우리 실내 노드로 재부착했다."
+    "거리 35m 는 팀원 assumptions 의 connectionM 상수이며 실측이 아니다.",
+    "층 단위 건물 실내 보행 허용치 11m 를 더했다 (elevatorAccessM 22m 의 절반씩). 건물 한 층이 노드 하나라 통과 거리가 0 으로 계산되는 것을 보정한다.",
+    "팀원 그래프의 mirae_old_3f(미래관 3층) 연결을 우리 실내 노드로 재부착했다 (실내 연결 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_old_3f",
    "_mirae_floor": 3
   },
   {
-   "id": "link/campus-mirae/463/rev",
+   "id": "link/campus-mirae/479/rev",
    "from_node": "campus/welfare_3f",
-   "to_node": "mirae/F3/entrance/1",
+   "to_node": "mirae/F3/ev/1/lobby",
    "kind": "building_connector",
    "horizontal_length_m": {
-    "value": 35.0,
+    "value": 46.0,
     "verification": "drawing_inferred",
     "unit": "m",
     "source_refs": [
@@ -164,35 +254,65 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_welfare_indoor",
-    "팀원 그래프의 mirae_old_3f(미래관 3층) 연결을 우리 실내 노드로 재부착했다."
+    "거리 35m 는 팀원 assumptions 의 connectionM 상수이며 실측이 아니다.",
+    "층 단위 건물 실내 보행 허용치 11m 를 더했다 (elevatorAccessM 22m 의 절반씩). 건물 한 층이 노드 하나라 통과 거리가 0 으로 계산되는 것을 보정한다.",
+    "팀원 그래프의 mirae_old_3f(미래관 3층) 연결을 우리 실내 노드로 재부착했다 (실내 연결 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_old_3f",
    "_mirae_floor": 3
   },
   {
-   "id": "link/campus-mirae/464",
-   "from_node": "mirae/F4/entrance/1",
+   "id": "link/campus-mirae/480",
+   "from_node": "mirae/F4/ev/1/lobby",
    "to_node": "campus/welfare_4f",
    "kind": "building_connector",
    "horizontal_length_m": {
-    "value": 35.0,
+    "value": 46.0,
     "verification": "drawing_inferred",
     "unit": "m",
     "source_refs": [
@@ -207,35 +327,65 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_welfare_indoor",
-    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다."
+    "거리 35m 는 팀원 assumptions 의 connectionM 상수이며 실측이 아니다.",
+    "층 단위 건물 실내 보행 허용치 11m 를 더했다 (elevatorAccessM 22m 의 절반씩). 건물 한 층이 노드 하나라 통과 거리가 0 으로 계산되는 것을 보정한다.",
+    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다 (실내 연결 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_old_4f",
    "_mirae_floor": 4
   },
   {
-   "id": "link/campus-mirae/464/rev",
+   "id": "link/campus-mirae/480/rev",
    "from_node": "campus/welfare_4f",
-   "to_node": "mirae/F4/entrance/1",
+   "to_node": "mirae/F4/ev/1/lobby",
    "kind": "building_connector",
    "horizontal_length_m": {
-    "value": 35.0,
+    "value": 46.0,
     "verification": "drawing_inferred",
     "unit": "m",
     "source_refs": [
@@ -250,30 +400,60 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_welfare_indoor",
-    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다."
+    "거리 35m 는 팀원 assumptions 의 connectionM 상수이며 실측이 아니다.",
+    "층 단위 건물 실내 보행 허용치 11m 를 더했다 (elevatorAccessM 22m 의 절반씩). 건물 한 층이 노드 하나라 통과 거리가 0 으로 계산되는 것을 보정한다.",
+    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다 (실내 연결 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_old_4f",
    "_mirae_floor": 4
   },
   {
-   "id": "link/campus-mirae/465",
+   "id": "link/campus-mirae/481",
    "from_node": "mirae/F1/entrance/1",
    "to_node": "campus/welfare_1f",
    "kind": "building_connector",
@@ -310,29 +490,38 @@
      ]
     },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_welfare_outdoor",
-    "팀원 그래프의 mirae_new_1f(미래관 1층) 연결을 우리 실내 노드로 재부착했다."
+    "팀원 그래프의 mirae_new_1f(미래관 1층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
    "_mirae_legacy_node": "mirae_new_1f",
    "_mirae_floor": 1
   },
   {
-   "id": "link/campus-mirae/465/rev",
+   "id": "link/campus-mirae/481/rev",
    "from_node": "campus/welfare_1f",
    "to_node": "mirae/F1/entrance/1",
    "kind": "building_connector",
@@ -369,34 +558,43 @@
      ]
     },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_welfare_outdoor",
-    "팀원 그래프의 mirae_new_1f(미래관 1층) 연결을 우리 실내 노드로 재부착했다."
+    "팀원 그래프의 mirae_new_1f(미래관 1층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
    "_mirae_legacy_node": "mirae_new_1f",
    "_mirae_floor": 1
   },
   {
-   "id": "link/campus-mirae/466",
-   "from_node": "mirae/F2/entrance/1",
+   "id": "link/campus-mirae/482",
+   "from_node": "mirae/F2/ev/1/lobby",
    "to_node": "campus/art_b2",
    "kind": "building_connector",
    "horizontal_length_m": {
-    "value": 35.0,
+    "value": 46.0,
     "verification": "drawing_inferred",
     "unit": "m",
     "source_refs": [
@@ -411,35 +609,65 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_art",
-    "팀원 그래프의 mirae_new_2f(미래관 2층) 연결을 우리 실내 노드로 재부착했다."
+    "거리 35m 는 팀원 assumptions 의 connectionM 상수이며 실측이 아니다.",
+    "층 단위 건물 실내 보행 허용치 11m 를 더했다 (elevatorAccessM 22m 의 절반씩). 건물 한 층이 노드 하나라 통과 거리가 0 으로 계산되는 것을 보정한다.",
+    "팀원 그래프의 mirae_new_2f(미래관 2층) 연결을 우리 실내 노드로 재부착했다 (실내 연결 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_new_2f",
    "_mirae_floor": 2
   },
   {
-   "id": "link/campus-mirae/466/rev",
+   "id": "link/campus-mirae/482/rev",
    "from_node": "campus/art_b2",
-   "to_node": "mirae/F2/entrance/1",
+   "to_node": "mirae/F2/ev/1/lobby",
    "kind": "building_connector",
    "horizontal_length_m": {
-    "value": 35.0,
+    "value": 46.0,
     "verification": "drawing_inferred",
     "unit": "m",
     "source_refs": [
@@ -454,30 +682,60 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "conn_mirae_art",
-    "팀원 그래프의 mirae_new_2f(미래관 2층) 연결을 우리 실내 노드로 재부착했다."
+    "거리 35m 는 팀원 assumptions 의 connectionM 상수이며 실측이 아니다.",
+    "층 단위 건물 실내 보행 허용치 11m 를 더했다 (elevatorAccessM 22m 의 절반씩). 건물 한 층이 노드 하나라 통과 거리가 0 으로 계산되는 것을 보정한다.",
+    "팀원 그래프의 mirae_new_2f(미래관 2층) 연결을 우리 실내 노드로 재부착했다 (실내 연결 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_new_2f",
    "_mirae_floor": 2
   },
   {
-   "id": "link/campus-mirae/476",
+   "id": "link/campus-mirae/492",
    "from_node": "mirae/F4/entrance/1",
    "to_node": "campus/p_plaza_mid_mirae_side",
    "kind": "entrance",
@@ -497,30 +755,59 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
-    "예술관·미래관·경영관 사이 광장 출입",
-    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다."
+    "운동장 주변 광장 · 건물 앞 길 출입",
+    "거리 12m 는 팀원 assumptions 의 plazaAccessM 상수이며 실측이 아니다.",
+    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_old_4f",
    "_mirae_floor": 4
   },
   {
-   "id": "link/campus-mirae/476/rev",
+   "id": "link/campus-mirae/492/rev",
    "from_node": "campus/p_plaza_mid_mirae_side",
    "to_node": "mirae/F4/entrance/1",
    "kind": "entrance",
@@ -540,30 +827,59 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
-    "예술관·미래관·경영관 사이 광장 출입",
-    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다."
+    "운동장 주변 광장 · 건물 앞 길 출입",
+    "거리 12m 는 팀원 assumptions 의 plazaAccessM 상수이며 실측이 아니다.",
+    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_old_4f",
    "_mirae_floor": 4
   },
   {
-   "id": "link/campus-mirae/477",
+   "id": "link/campus-mirae/493",
    "from_node": "mirae/F4/entrance/1",
    "to_node": "campus/p_plaza_mid_mirae_side",
    "kind": "entrance",
@@ -583,30 +899,59 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
-    "예술관·미래관·경영관 사이 광장 출입",
-    "팀원 그래프의 mirae_new_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다."
+    "운동장 주변 광장 · 건물 앞 길 출입",
+    "거리 12m 는 팀원 assumptions 의 plazaAccessM 상수이며 실측이 아니다.",
+    "팀원 그래프의 mirae_new_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_new_4f",
    "_mirae_floor": 4
   },
   {
-   "id": "link/campus-mirae/477/rev",
+   "id": "link/campus-mirae/493/rev",
    "from_node": "campus/p_plaza_mid_mirae_side",
    "to_node": "mirae/F4/entrance/1",
    "kind": "entrance",
@@ -626,30 +971,59 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
-    "예술관·미래관·경영관 사이 광장 출입",
-    "팀원 그래프의 mirae_new_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다."
+    "운동장 주변 광장 · 건물 앞 길 출입",
+    "거리 12m 는 팀원 assumptions 의 plazaAccessM 상수이며 실측이 아니다.",
+    "팀원 그래프의 mirae_new_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
+   "length_is_assumed": true,
    "_mirae_legacy_node": "mirae_new_4f",
    "_mirae_floor": 4
   },
   {
-   "id": "link/campus-mirae/480",
+   "id": "link/campus-mirae/504",
    "from_node": "mirae/F4/entrance/1",
    "to_node": "campus/w5505697720",
    "kind": "entrance",
@@ -669,30 +1043,57 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "운동장 (북서쪽) 출입구",
-    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다."
+    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
    "_mirae_legacy_node": "mirae_old_4f",
    "_mirae_floor": 4
   },
   {
-   "id": "link/campus-mirae/480/rev",
+   "id": "link/campus-mirae/504/rev",
    "from_node": "campus/w5505697720",
    "to_node": "mirae/F4/entrance/1",
    "kind": "entrance",
@@ -712,30 +1113,57 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "운동장 (북서쪽) 출입구",
-    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다."
+    "팀원 그래프의 mirae_old_4f(미래관 4층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
    "_mirae_legacy_node": "mirae_old_4f",
    "_mirae_floor": 4
   },
   {
-   "id": "link/campus-mirae/481",
+   "id": "link/campus-mirae/505",
    "from_node": "mirae/F1/entrance/1",
    "to_node": "campus/w13343826486",
    "kind": "entrance",
@@ -755,30 +1183,57 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "신관 1층 통로 (바깥) 출입구",
-    "팀원 그래프의 mirae_new_1f(미래관 1층) 연결을 우리 실내 노드로 재부착했다."
+    "팀원 그래프의 mirae_new_1f(미래관 1층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
    "_mirae_legacy_node": "mirae_new_1f",
    "_mirae_floor": 1
   },
   {
-   "id": "link/campus-mirae/481/rev",
+   "id": "link/campus-mirae/505/rev",
    "from_node": "campus/w13343826486",
    "to_node": "mirae/F1/entrance/1",
    "kind": "entrance",
@@ -798,24 +1253,51 @@
       "teammate:campus-graph.json@0.4.0-r3"
      ]
     },
+    "slope_up_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
+    "slope_down_pct": {
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "%",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다."
+    },
     "clear_width_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 폭 정보 없음"
+     "value": 1.2,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     },
     "threshold_m": {
-     "value": null,
-     "verification": "unknown",
-     "note": "팀원 데이터에 문턱 정보 없음"
+     "value": 0.0,
+     "verification": "drawing_inferred",
+     "unit": "m",
+     "source_refs": [
+      "teammate:campus-graph.json@0.4.0-r3"
+     ],
+     "note": "현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한 값이다. 실측 시 교체해야 한다."
     }
    },
    "min_accessibility_verification": "drawing_inferred",
+   "accessibility_is_assumed": true,
    "source_refs": [
     "teammate:campus-graph.json@0.4.0-r3"
    ],
    "notes": [
     "신관 1층 통로 (바깥) 출입구",
-    "팀원 그래프의 mirae_new_1f(미래관 1층) 연결을 우리 실내 노드로 재부착했다."
+    "팀원 그래프의 mirae_new_1f(미래관 1층) 연결을 우리 실내 노드로 재부착했다 (실외 출입 기준)."
    ],
    "_mirae_legacy_node": "mirae_new_1f",
    "_mirae_floor": 1

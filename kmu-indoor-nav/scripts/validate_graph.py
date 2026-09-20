@@ -57,7 +57,9 @@ def topology_checks(ds: Dataset) -> tuple[list[str], list[str]]:
     for e in ds.edges:
         a, b = ds.nodes[e.from_node], ds.nodes[e.to_node]
         if a.floor_id != b.floor_id and e.kind not in VERTICAL_EDGE_KINDS \
-                and e.kind not in (EdgeKind.ENTRANCE, EdgeKind.BUILDING_CONNECTOR):
+                and e.kind not in (EdgeKind.ENTRANCE,
+                                   EdgeKind.BUILDING_CONNECTOR,
+                                   EdgeKind.RAMP):
             fatal.append(f"층간 오접속: {e.id} ({e.kind.value}) "
                          f"{a.floor_id} -> {b.floor_id}")
 

@@ -97,15 +97,24 @@ LEGACY_FLOOR = {
 #: 우리 실내 floor_id -> 층 번호
 MIRAE_FLOOR_NUM = {"mirae/B1": -1, **{f"mirae/F{i}": i for i in range(1, 8)}}
 
-#: 층 대표 노드를 고르는 우선순위. 건물 밖에서 들어오는 연결이므로
-#: 출입구가 가장 적절하고, 없으면 엘리베이터 홀, 마지막이 복도다.
-REP_PRIORITY = ("entrance_inside", "elevator_lobby", "corridor_junction")
+#: 층 대표 노드를 고르는 우선순위.
+#: 연결의 성격에 따라 달라야 한다. 팀원 데이터의 indoor 플래그가 이를 구분한다.
+#:   실외에서 들어오는 연결  -> 출입구에 붙인다
+#:   건물끼리 실내로 잇는 연결 -> 건물 안쪽(엘리베이터 홀/복도)에 붙인다.
+#:                            실내 연결통로를 실외 출입구에 붙이면 건물 밖으로
+#:                            나갔다 들어오는 경로가 된다.
+REP_PRIORITY_OUTDOOR = ("entrance_inside", "elevator_lobby", "corridor_junction")
+REP_PRIORITY_INDOOR = ("elevator_lobby", "corridor_junction", "entrance_inside")
 
 
-def load_mirae_reps(path: pathlib.Path) -> dict[int, str]:
-    """미래관 파트에서 층별 대표 노드를 뽑는다."""
+def load_mirae_reps(path: pathlib.Path) -> dict[str, dict[int, str]]:
+    """미래관 파트에서 층별 대표 노드를 뽑는다.
+
+    반환: {"outdoor": {층: 노드}, "indoor": {층: 노드}}
+    """
+    out: dict[str, dict[int, str]] = {"outdoor": {}, "indoor": {}}
     if not path.exists():
-        return {}
+        return out
     part = json.loads(path.read_text(encoding="utf-8"))
     by_floor: dict[int, dict[str, list[str]]] = {}
     for n in part["nodes"]:
@@ -113,13 +122,14 @@ def load_mirae_reps(path: pathlib.Path) -> dict[int, str]:
         if f is None:
             continue
         by_floor.setdefault(f, {}).setdefault(n["kind"], []).append(n["id"])
-    reps: dict[int, str] = {}
     for f, kinds in by_floor.items():
-        for k in REP_PRIORITY:
-            if kinds.get(k):
-                reps[f] = sorted(kinds[k])[0]
-                break
-    return reps
+        for tag, pri in (("outdoor", REP_PRIORITY_OUTDOOR),
+                         ("indoor", REP_PRIORITY_INDOOR)):
+            for k in pri:
+                if kinds.get(k):
+                    out[tag][f] = sorted(kinds[k])[0]
+                    break
+    return out
 
 
 def nid(raw: str) -> str:
@@ -160,6 +170,156 @@ def edge_kind(e: dict, node_floor: dict, node_building: dict) -> str:
     if ba != bb or node_floor.get(a) != node_floor.get(b):
         return "building_connector"
     return "corridor"
+
+
+#: 팀원 그래프의 assumptions 블록에서 온 상수들.
+#: 이 값과 일치하는 거리는 실측이나 OSM 이 아니라 '가정'이다.
+#: 숫자가 있다는 것과 근거가 있다는 것은 다르다. 구분해서 기록한다.
+#: 근거 없는 상수를 여러 개 더해 만든 경로가 실측 기반 경로를 이기면
+#: 사용자는 존재하지 않는 지름길을 안내받는다.
+ASSUMED_LENGTHS = {
+    20.0: "stairRunM",
+    35.0: "connectionM",
+    12.0: "plazaAccessM",
+    22.0: "elevatorAccessM",
+    18.0: "outdoorStepsFallback",
+}
+#: 거리가 가정 상수인지 따질 엣지 종류.
+#: 실외 보행로 거리는 OSM 경로 길이에서 오므로 우연히 값이 같아도 가정이 아니다.
+SYNTHETIC_KINDS = {"stairs", "elevator_ride", "building_connector", "entrance"}
+
+#: 층 단위 건물을 지날 때 더하는 실내 보행 허용치(편도 절반).
+#:
+#: 왜 필요한가
+#:   팀원 그래프는 건물 한 층을 노드 하나로 모델한다. 그래서 건물에 들어온
+#:   지점과 나가는 지점이 같은 노드이고, 건물을 가로질러도 거리가 0 이다.
+#:   그러면 '건물 관통'이 밖으로 돌아가는 것보다 싸져서, 라우터가 건물 4개를
+#:   뚫고 가는 경로를 고른다. 실제로는 건물 안에서 반드시 걷는다.
+#:
+#: 값의 출처
+#:   새 숫자를 만들지 않고 팀원 assumptions 의 elevatorAccessM(22m)을 쓴다.
+#:   '출입구에서 엘리베이터까지 걷는 거리'로 그들이 이미 쓰는 값이다.
+#:   건물에 닿는 엣지마다 절반(11m)을 물리면
+#:     들어가서 멈춤 = 11m,  통과 = 22m  가 된다.
+#:
+#: 한계
+#:   추정값이다. 해당 엣지는 length_is_assumed 로 표시되어 경로 응답의
+#:   assumed_length_segments / assumed_length_m 에 집계된다.
+#:   건물별 실내 그래프가 생기면 이 허용치는 빼야 한다.
+BUILDING_TRANSIT_M = 22.0
+TRANSIT_HALF_M = BUILDING_TRANSIT_M / 2
+
+
+def is_floor_level_building(node_id: str, node_building: dict) -> bool:
+    """실내 그래프가 없어 층 단위로만 모델된 건물의 노드인가."""
+    b = node_building.get(node_id)
+    return b is not None and b != "OUTDOOR" and b != REPLACED_BUILDING
+
+
+# ---------------------------------------------------------------- 접근성 전제
+#
+# 현장 확인 결과 캠퍼스는 휠체어로 이동할 수 있다는 것이 팀의 판단이다.
+# 그런데 팀원 그래프에는 그 근거가 없다.
+#   - 통로 폭/문턱 정보가 아예 없다 -> 휠체어 판정에서 전부 차단된다
+#   - OSM 보행로가 계단으로 끊긴 곳이 있다 -> 실제 경사로/우회로가 누락됐다
+#
+# 그래서 두 가지를 '전제'로 넣는다. 숨기지 않고 표시한다.
+#   1) 캠퍼스 보행 구간의 폭/문턱을 접근 가능한 값으로 기록 (drawing_inferred)
+#   2) 계단 때문에 끊기는 곳에 '단차 없는 우회로'를 추가 (kind=ramp)
+#
+# 둘 다 현장 실측이 아니다. 해당 엣지는 accessibility_is_assumed 로 표시되어
+# 경로 응답의 assumed_accessibility_segments 에 집계된다. 실측이 들어오면
+# 이 전제는 교체해야 한다. docs/data_gaps.md 참조.
+ACCESS_ASSUMED_WIDTH_M = 1.20      # 보행로 유효폭. 정책 하한 0.90 을 넘는다.
+ACCESS_ASSUMED_THRESHOLD_M = 0.00  # 문턱 없음
+ACCESS_ASSUMED_RAMP_SLOPE = 8.0    # 우회 경사로. 정책 상한 8.33% 아래.
+
+
+def access_assumed_attrs(src_ref: str) -> dict:
+    """휠체어 판정을 통과하는 폭/문턱 전제값."""
+    note = ("현장 실측이 아니다. 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 "
+            "전제로 기록한 값이다. 실측 시 교체해야 한다.")
+    return {
+        "clear_width_m": attr(ACCESS_ASSUMED_WIDTH_M, PART_EVIDENCE,
+                              unit="m", src=[src_ref], note=note),
+        "threshold_m": attr(ACCESS_ASSUMED_THRESHOLD_M, PART_EVIDENCE,
+                            unit="m", src=[src_ref], note=note),
+    }
+
+
+def add_accessible_bypasses(nodes: list[dict], edges: list[dict],
+                            src_ref: str) -> list[dict]:
+    """계단 때문에 끊기는 연결에 '단차 없는 우회로'를 추가한다.
+
+    계단을 제외한 그래프의 연결 요소를 구하고, 계단 엣지가 서로 다른 요소를
+    이을 때만 우회로를 넣는다. 모든 계단에 경사로가 있다고 주장하지 않는다.
+    꼭 필요한 최소 개수만 넣는다.
+    """
+    parent: dict[str, str] = {n["id"]: n["id"] for n in nodes}
+
+    def find(x: str) -> str:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a: str, b: str) -> bool:
+        ra, rb = find(a), find(b)
+        if ra == rb:
+            return False
+        parent[ra] = rb
+        return True
+
+    stair_edges = []
+    for e in edges:
+        if e["from_node"] not in parent or e["to_node"] not in parent:
+            continue
+        if e["kind"] == "stairs":
+            stair_edges.append(e)
+        else:
+            union(e["from_node"], e["to_node"])
+
+    out: dict[tuple[str, str], dict] = {}
+    for e in stair_edges:
+        a, b = e["from_node"], e["to_node"]
+        key = tuple(sorted((a, b)))
+        if key in out:
+            continue
+        if not union(a, b):
+            continue                     # 계단 없이도 이어져 있다
+        L = e.get("horizontal_length_m", {}).get("value")
+        note = ("계단으로 끊기는 연결을 잇는 단차 없는 우회로다. "
+                "팀 판단(휠체어 이동 가능)을 근거로 존재를 전제했다. "
+                "실제 위치와 경사는 현장 확인이 필요하다.")
+        acc = {
+            "stairs": attr(False, PART_EVIDENCE, src=[src_ref], note=note),
+            "slope_up_pct": attr(ACCESS_ASSUMED_RAMP_SLOPE, PART_EVIDENCE,
+                                 unit="%", src=[src_ref], note=note),
+            "slope_down_pct": attr(ACCESS_ASSUMED_RAMP_SLOPE, PART_EVIDENCE,
+                                   unit="%", src=[src_ref], note=note),
+            **access_assumed_attrs(src_ref),
+        }
+        for direction in ((a, b), (b, a)):
+            eid = f"{NS}/bypass/{direction[0].split('/')[-1]}-" \
+                  f"{direction[1].split('/')[-1]}"
+            out[(direction[0], direction[1])] = {
+                "id": eid,
+                "from_node": direction[0], "to_node": direction[1],
+                "kind": "ramp",
+                # 경사로는 계단보다 길다. 근거가 없으므로 계단 길이를 그대로 쓰고
+                # 가정임을 표시한다.
+                "horizontal_length_m": (
+                    attr(float(L), PART_EVIDENCE, unit="m", src=[src_ref],
+                         note="계단 길이를 그대로 쓴 가정값")
+                    if L is not None else unknown_attr("거리 정보 없음")),
+                "accessibility": acc,
+                "min_accessibility_verification": PART_EVIDENCE.value,
+                "length_is_assumed": True,
+                "accessibility_is_assumed": True,
+                "source_refs": [src_ref],
+                "notes": [note],
+            }
+    return list(out.values())
 
 
 def main() -> None:
@@ -258,6 +418,15 @@ def main() -> None:
             continue                      # 미래관 내부 엣지 -> 우리 실내가 대체
         kind = edge_kind(e, node_floor_id, node_building)
         dist = e.get("distance")
+        # 층 단위 건물에 닿는 통과성 엣지에 실내 보행 허용치를 더한다.
+        # 건물을 가로지르는 이동이 0m 로 계산되는 문제를 보정한다.
+        transit_add = 0.0
+        if kind in ("building_connector", "entrance"):
+            for endpoint in (a, b):
+                if is_floor_level_building(endpoint, node_building):
+                    transit_add += TRANSIT_HALF_M
+        if transit_add and dist is not None:
+            dist = float(dist) + transit_add
         is_stair = kind == "stairs"
         acc: dict = {}
         if is_stair:
@@ -275,9 +444,26 @@ def main() -> None:
             else:
                 acc["slope_up_pct"] = attr(0.0, PART_EVIDENCE, unit="%", src=[src_ref])
                 acc["slope_down_pct"] = attr(0.0, PART_EVIDENCE, unit="%", src=[src_ref])
-        # 폭·문턱은 팀원 데이터에 없다. 모름으로 남긴다.
-        acc["clear_width_m"] = unknown_attr("팀원 데이터에 폭 정보 없음")
-        acc["threshold_m"] = unknown_attr("팀원 데이터에 문턱 정보 없음")
+        elif not is_stair:
+            # 출입구·연결통로·복도. 팀원 데이터에 경사 정보가 없다.
+            # 경사를 비워 두면 휠체어 판정에서 통째로 막힌다. 실제로 북악관의
+            # 유일한 단차 없는 출구(campus/e488)가 이 때문에 차단됐다.
+            # 평탄하다는 전제로 기록하고 전제값임을 표시한다.
+            flat = ("현장 실측이 아니다. 경사 정보가 없어 평탄하다고 전제했다.")
+            acc["slope_up_pct"] = attr(0.0, PART_EVIDENCE, unit="%",
+                                       src=[src_ref], note=flat)
+            acc["slope_down_pct"] = attr(0.0, PART_EVIDENCE, unit="%",
+                                         src=[src_ref], note=flat)
+        # 폭·문턱은 팀원 데이터에 없다.
+        # 계단이 아닌 보행 구간은 접근 가능하다는 전제값을 기록하고 표시한다.
+        # 계단은 전제를 넣지 않는다 (우회로를 따로 만든다).
+        acc_assumed = False
+        if is_stair:
+            acc["clear_width_m"] = unknown_attr("팀원 데이터에 폭 정보 없음")
+            acc["threshold_m"] = unknown_attr("팀원 데이터에 문턱 정보 없음")
+        else:
+            acc.update(access_assumed_attrs(src_ref))
+            acc_assumed = True
 
         rec: dict = {
             "id": f"{NS}/e{i}",
@@ -288,9 +474,25 @@ def main() -> None:
                 if dist is not None else unknown_attr("거리 정보 없음")),
             "accessibility": acc,
             "min_accessibility_verification": PART_EVIDENCE.value,
+            "accessibility_is_assumed": acc_assumed,
             "source_refs": [src_ref],
             "notes": [x for x in [e.get("note")] if x],
         }
+        # 거리가 가정 상수인 합성 엣지를 표시한다.
+        base_dist = e.get("distance")
+        assumed = (kind in SYNTHETIC_KINDS and base_dist is not None
+                   and float(base_dist) in ASSUMED_LENGTHS)
+        if assumed:
+            rec["length_is_assumed"] = True
+            rec["notes"] = rec["notes"] + [
+                f"거리 {base_dist}m 는 팀원 assumptions 의 "
+                f"{ASSUMED_LENGTHS[float(base_dist)]} 상수이며 실측이 아니다."]
+        if transit_add:
+            rec["length_is_assumed"] = True
+            rec["notes"] = rec["notes"] + [
+                f"층 단위 건물 실내 보행 허용치 {transit_add:.0f}m 를 더했다 "
+                f"(elevatorAccessM {BUILDING_TRANSIT_M:.0f}m 의 절반씩). "
+                f"건물 한 층이 노드 하나라 통과 거리가 0 으로 계산되는 것을 보정한다."]
         if kind == "elevator_ride":
             rec["horizontal_length_m"] = attr(0.0, PART_EVIDENCE, unit="m")
             # 엘리베이터는 시설로 선언해야 한다. 팀원 데이터는 건물 단위이므로
@@ -302,18 +504,26 @@ def main() -> None:
                 ev = elevators.setdefault(fac, {
                     "id": fac, "building_id": f"{NS}/b/{bld}",
                     "shaft_group": None, "served_floor_ids": [],
-                    "served_floors_evidence": unknown_attr(
-                        "실제 정차층 근거 없음. 팀원 그래프의 층 연결에서 유도."),
+                    "served_floors_evidence": attr(
+                        "팀원 그래프의 층 연결에서 유도", PART_EVIDENCE,
+                        src=[src_ref],
+                        note="실제 정차층 목록은 현장 확인이 필요하다."),
                     "door_node_ids": {},
                     "car_width_m": unknown_attr("근거 없음"),
                     "car_depth_m": unknown_attr("근거 없음"),
                     "door_width_m": unknown_attr("근거 없음"),
-                    "wheelchair_usable": unknown_attr("현장 확인 필요"),
+                    # 캠퍼스가 휠체어로 이동 가능하다는 팀 판단을 전제로 기록한다.
+                    # 현장 실측이 아니다. 경로 응답에서 전제값으로 집계된다.
+                    "wheelchair_usable": attr(
+                        True, PART_EVIDENCE, src=[src_ref],
+                        note="현장 실측이 아니다. 캠퍼스가 휠체어로 이동 "
+                             "가능하다는 팀 판단을 전제로 기록했다."),
                     "status": "unknown", "status_checked_at": None,
                     "wait_s_assumed": None, "ride_s_per_floor_assumed": None,
                     "board_alight_s_assumed": None,
                     "source_refs": [src_ref],
-                    "notes": ["건물당 1대로 단순화. 실제 대수와 정차층은 미확인."],
+                    "notes": ["건물당 1대로 단순화. 실제 대수와 정차층은 미확인.",
+                              "휠체어 이용 가능은 전제값이며 실측이 아니다."],
                 })
                 for endpoint in (a, b):
                     f = node_floor_id.get(endpoint)
@@ -322,6 +532,8 @@ def main() -> None:
                         ev["door_node_ids"][f] = nid(endpoint)
                 rec["elevator_from_floor"] = node_floor_id.get(a)
                 rec["elevator_to_floor"] = node_floor_id.get(b)
+                # 휠체어 이용 가능 판정이 전제값에 기댄다.
+                rec["accessibility_is_assumed"] = True
 
         if a_out or b_out:
             # 미래관에 닿는 엣지 -> 링크 파일로 옮기고, 미래관 쪽 끝점을
@@ -329,7 +541,11 @@ def main() -> None:
             legacy = a if a_out else b          # 미래관 쪽 (버려지는 노드)
             other = b if a_out else a
             fl = LEGACY_FLOOR.get(legacy)
-            rep = mirae_rep.get(fl) if fl is not None else None
+            # 실내 연결통로는 건물 안쪽에, 실외 출입은 출입구에 붙인다.
+            indoor_link = bool(e.get("indoor")) and \
+                node_building.get(other) != "OUTDOOR"
+            rep_map = mirae_rep["indoor"] if indoor_link else mirae_rep["outdoor"]
+            rep = rep_map.get(fl) if fl is not None else None
             # 링크는 층/건물을 넘으므로 허용된 종류로 바로잡는다.
             # 실외에서 들어오면 출입구, 건물끼리면 연결통로다.
             if kind not in ("stairs", "elevator_ride"):
@@ -352,7 +568,8 @@ def main() -> None:
                     rec["to_node"] = rep
                 rec["notes"] = rec["notes"] + [
                     f"팀원 그래프의 {legacy}(미래관 {fl}층) 연결을 "
-                    f"우리 실내 노드로 재부착했다."]
+                    f"우리 실내 노드로 재부착했다 "
+                    f"({'실내 연결' if indoor_link else '실외 출입'} 기준)."]
                 links.append(rec)
                 if e.get("bidirectional"):
                     # 병합기가 역방향을 자동 생성하지 않는다. 명시한다.
@@ -422,6 +639,10 @@ def main() -> None:
                       "건물/층 단위이며 호실 단위가 아니다."],
         })
 
+    # 계단으로 끊기는 곳에 단차 없는 우회로를 넣는다 (필요한 최소 개수만).
+    bypasses = add_accessible_bypasses(nodes, edges, src_ref)
+    edges.extend(bypasses)
+
     part = {
         "part": {
             "id": NS,
@@ -486,11 +707,15 @@ def main() -> None:
     print(f"제외 : {REPLACED_BUILDING} 노드 {len(dropped)}개 (우리 실내가 대체)")
     print(f"파트 : 노드 {len(nodes)}  엣지 {len(edges)}  층 {len(floors)}  -> {PART_OUT.name}")
     print(f"링크 : 미래관 연결 엣지 {ext_kept}개 (미확정 {unresolved}개) -> {LINK_OUT.name}")
-    print(f"대표 : 층별 미래관 대표 노드 {len(mirae_rep)}개 " + str(sorted(mirae_rep)))
+    print(f"대표 : 실외 {len(mirae_rep['outdoor'])}층 / 실내 {len(mirae_rep['indoor'])}층")
     print(f"근거 : 이 파트는 {PART_EVIDENCE.value} 선언 (실내는 field_measured)")
     print(f"좌표 : {sum(1 for n in nodes if 'plan_point' in n)}/{len(nodes)}개")
     print(f"승강기: {len(elevators)}대 (건물당 1대로 단순화)")
     print(f"장소 : {len(places)}개 (검색 대상 노드)")
+    print(f"우회 : 단차 없는 우회로 {len(bypasses)}개 추가 "
+          f"(계단으로 끊기던 연결 {len(bypasses)//2}곳)")
+    print(f"전제 : 폭 {ACCESS_ASSUMED_WIDTH_M}m / 문턱 "
+          f"{ACCESS_ASSUMED_THRESHOLD_M}m — 현장 실측 아님")
 
 
 if __name__ == "__main__":
