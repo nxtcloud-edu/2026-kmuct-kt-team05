@@ -1,0 +1,36 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# --- 원본 도면 (국민대 공식 평면도) ---
+# 이용 조건이 확인되지 않았으므로 저장소에 포함하지 않는다.
+# 재현 방법:  python scripts/collect_floorplans.py
+# 무결성 검증: data/sources/manifest.json 의 SHA-256 과 대조
+data/raw/floorplans/
+
+# --- 작업 산출물 (재생성 가능) ---
+data/work/crops/
+data/work/*.log
+data/work/*.err
+data/work/*.pid
+data/work/*.info
+data/work/*.txt
+data/work/dump_*.txt
+
+# --- 실외 시제품 생성물 (fetch_osm.py / build_graph.py 로 재생성) ---
+data/raw_osm.json
+data/graph.json
+data/graph.geojson
+data/routes.geojson
+
+# 층별 지도(시안)는 데모 동작에 필요하므로 포함한다.
+# 원본 공식 도면(data/raw/floorplans)만 제외.
+!data/raw/navmaps/
+
+# 병합 산출물 - 직접 편집/커밋하지 않는다 (scripts/merge_graphs.py 로 생성)
+data/published/campus_v1.json
+
+data/work/*.html

@@ -1,0 +1,53 @@
+============================================================================
+graph_version : mirae-demo-v1-ASSUMED
+schema_version: 1.0.0
+source        : data\demo\mirae_demo_v1.json
+검증 수준     : 데모용 가정값(ASSUMED) 포함. 현장 실측 아님.
+현장 검증     : False
+휠체어 인증   : False
+실외 연결     : 없음
+층간 연결     : 가정 승강기 1대 (mirae/ev/DEMO-1)
+데이터 경고   : 2건
+  - plan mirae/plan/3F: 층 매핑 미확정(pending_review) web='3층' drawing='지상 3층'
+  - plan mirae/plan/B2_2: 층 매핑 미확정(source_label_conflict) web='지하 2층-②' drawing='지상 2층'
+============================================================================
+
+요청: 202 -> 338   (mirae/DRAWING-2F/door/202 -> mirae/F3/door/338-W)
+
+상태: ok
+policy_version: policy-2026.09.20-01   objective=fastest   profile=wheelchair
+적용 제약: {"no_stairs": true, "wheelchair": true, "max_slope_up_pct": 8.33, "max_slope_down_pct": 8.33, "min_clear_width_m": 0.9, "max_threshold_m": 0.02, "required_accessibility_fields": ["clear_width_m", "threshold_m", "slope_up_pct", "slope_down_pct"]}
+
+지표 (항목 분리)
+  보행거리          : 20.3 m
+  추정 소요시간     : 77.0 s  (가정값=True)
+  실외 이동거리     : 0.0 m
+  계단 구간 수      : 0
+  계단 실제 단수    : None  (단수 미상 구간 0개)
+  엘리베이터 탑승   : 1 회
+  관측 기반 최대경사: 0.5
+  추정 기반 최대경사: None
+  미검증 구간 수    : 0
+  경유 층           : ['mirae/DRAWING-2F', 'mirae/F3']
+  전층 축척 검증    : True
+
+세그먼트 (7개)
+   1. [door          ] mirae/DRAWING-2F/door/202 -> mirae/DRAWING-2F/cj/202  8.0s  space=plan:mirae/DRAWING-2F
+   2. [corridor      ] mirae/DRAWING-2F/cj/202 -> mirae/DRAWING-2F/ev/DEMO-1/lobby  5.1s  space=plan:mirae/DRAWING-2F
+   3. [elevator_ride ] mirae/DRAWING-2F/ev/DEMO-1/lobby -> mirae/F3/ev/DEMO-1/lobby  40.0s  space=transition
+   4. [corridor      ] mirae/F3/ev/DEMO-1/lobby -> mirae/F3/cj/wc-W  2.9s  space=plan:mirae/F3
+   5. [corridor      ] mirae/F3/cj/wc-W -> mirae/F3/cj/338-E  1.6s  space=plan:mirae/F3
+   6. [corridor      ] mirae/F3/cj/338-E -> mirae/F3/cj/338-W  11.4s  space=plan:mirae/F3
+   7. [door          ] mirae/F3/cj/338-W -> mirae/F3/door/338-W  8.0s  space=plan:mirae/F3
+
+단계 안내
+   1. (원본상 2층 (서비스 층 미확정)) 202호 문 앞 복도 문을 통과
+      -> 문을 지났으면 다음을 누르세요.
+   2. (원본상 2층 (서비스 층 미확정)) 약 4 m 이동: 202호 문 앞 복도 → 2층 승강장(가정)
+   3. (3층) mirae/ev/DEMO-1 를 타고 원본상 2층 (서비스 층 미확정) → 3층 이동
+      -> 엘리베이터에서 내렸으면 다음을 누르세요.
+   4. (3층) 약 2 m 이동: 3층 승강장(가정) → 화장실 서측 출입부 앞
+   5. (3층) 약 1 m 이동: 화장실 서측 출입부 앞 → 338호 동측 문 앞 복도
+   6. (3층) 약 10 m 이동: 338호 동측 문 앞 복도 → 338호 서측 문 앞 복도
+   7. (3층) 338호 서측 문 문을 통과
+      -> 문을 지났으면 다음을 누르세요.
