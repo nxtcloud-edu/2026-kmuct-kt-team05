@@ -1,0 +1,49 @@
+{
+  "_readme": [
+    "엔진/데이터 담당 소유 파일입니다. UI 담당은 이 파일을 열지 않습니다.",
+    "실제 작업 시 data/campus-graph.json 으로 복사해서 채우세요.",
+    "타입은 lib/types.ts 의 CampusGraph 와 정확히 일치해야 합니다.",
+    "좌표(x, y)는 여기 넣지 않습니다. 좌표는 UI가 data/coords.json 에서 관리합니다."
+  ],
+
+  "version": "0.1.0",
+
+  "buildings": [
+    { "id": "bukak", "name": "북악관", "floors": [1, 2, 3, 4, 5] },
+    { "id": "johyung", "name": "조형관", "floors": [1, 2, 3] }
+  ],
+
+  "nodes": [
+    { "id": "bukak_4f_411", "building": "북악관", "floor": 4, "label": "북악관 411호", "kind": "room", "searchable": true, "aliases": ["411", "북악411"] },
+    { "id": "bukak_4f_hall", "building": "북악관", "floor": 4, "label": "북악관 4층 복도", "kind": "junction", "searchable": false },
+    { "id": "bukak_4f_stair_a", "building": "북악관", "floor": 4, "label": "북악관 4층 서쪽 계단", "kind": "stairs", "searchable": false },
+    { "id": "bukak_4f_bridge", "building": "북악관", "floor": 4, "label": "북악관 4층 연결통로", "kind": "bridge", "searchable": false },
+    { "id": "bukak_1f_stair_a", "building": "북악관", "floor": 1, "label": "북악관 1층 서쪽 계단", "kind": "stairs", "searchable": false },
+    { "id": "bukak_1f_lobby", "building": "북악관", "floor": 1, "label": "북악관 1층 로비", "kind": "junction", "searchable": true, "aliases": ["북악관로비"] },
+    { "id": "bukak_1f_exit_w", "building": "북악관", "floor": 1, "label": "북악관 서쪽 출구", "kind": "entrance", "searchable": false },
+    { "id": "out_plaza", "building": "OUTDOOR", "floor": 0, "label": "중앙 광장", "kind": "outdoor", "searchable": true, "aliases": ["광장"] },
+    { "id": "out_johyung_stair", "building": "OUTDOOR", "floor": 0, "label": "조형관 앞 계단", "kind": "outdoor", "searchable": false },
+    { "id": "johyung_1f_entrance", "building": "조형관", "floor": 1, "label": "조형관 정문", "kind": "entrance", "searchable": false },
+    { "id": "johyung_1f_lobby", "building": "조형관", "floor": 1, "label": "조형관 1층 로비", "kind": "junction", "searchable": true },
+    { "id": "johyung_3f_bridge", "building": "조형관", "floor": 3, "label": "조형관 3층 연결통로", "kind": "bridge", "searchable": false },
+    { "id": "johyung_3f_hall", "building": "조형관", "floor": 3, "label": "조형관 3층 복도", "kind": "junction", "searchable": false },
+    { "id": "johyung_3f_302", "building": "조형관", "floor": 3, "label": "조형관 302호", "kind": "room", "searchable": true, "aliases": ["302", "조형302"] }
+  ],
+
+  "edges": [
+    { "from": "bukak_4f_411", "to": "bukak_4f_hall", "distance": 15, "stairsUp": 0, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true },
+    { "from": "bukak_4f_hall", "to": "bukak_4f_stair_a", "distance": 20, "stairsUp": 0, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true },
+    { "from": "bukak_4f_hall", "to": "bukak_4f_bridge", "distance": 30, "stairsUp": 0, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true },
+    { "from": "bukak_4f_stair_a", "to": "bukak_1f_stair_a", "distance": 40, "stairsUp": 0, "stairsDown": 58, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true },
+    { "from": "bukak_1f_stair_a", "to": "bukak_1f_lobby", "distance": 12, "stairsUp": 0, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true },
+    { "from": "bukak_1f_lobby", "to": "bukak_1f_exit_w", "distance": 10, "stairsUp": 0, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true },
+    { "from": "bukak_1f_exit_w", "to": "out_plaza", "distance": 45, "stairsUp": 0, "stairsDown": 0, "slope": 0.12, "indoor": false, "elevator": false, "bidirectional": true },
+    { "from": "out_plaza", "to": "out_johyung_stair", "distance": 35, "stairsUp": 0, "stairsDown": 0, "slope": 0.18, "indoor": false, "elevator": false, "bidirectional": true, "note": "급경사 구간" },
+    { "from": "out_johyung_stair", "to": "johyung_1f_entrance", "distance": 15, "stairsUp": 12, "stairsDown": 0, "slope": 0, "indoor": false, "elevator": false, "bidirectional": true },
+    { "from": "johyung_1f_entrance", "to": "johyung_1f_lobby", "distance": 10, "stairsUp": 0, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true },
+    { "from": "johyung_1f_lobby", "to": "johyung_3f_hall", "distance": 30, "stairsUp": 40, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true },
+    { "from": "bukak_4f_bridge", "to": "johyung_3f_bridge", "distance": 30, "stairsUp": 0, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true, "note": "핵심 자산: 층이 다른 두 건물의 연결통로" },
+    { "from": "johyung_3f_bridge", "to": "johyung_3f_hall", "distance": 25, "stairsUp": 0, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true },
+    { "from": "johyung_3f_hall", "to": "johyung_3f_302", "distance": 30, "stairsUp": 0, "stairsDown": 0, "slope": 0, "indoor": true, "elevator": false, "bidirectional": true }
+  ]
+}

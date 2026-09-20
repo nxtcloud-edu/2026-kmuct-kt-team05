@@ -1,0 +1,394 @@
+{
+  "_readme": [
+    "국민대 캠퍼스의 층간 연결 / 엘리베이터 / 상대 고도 정보.",
+    "OpenStreetMap 에도, 어떤 지도 서비스에도 없는 정보입니다. 이 프로젝트의 핵심 자산입니다.",
+    "출처: 재학생 제보 (3차 정정 반영).",
+    "",
+    "floor 표기: 지상은 양수(1=1층), 지하는 음수(-1=B1, -2=B2). 0층은 존재하지 않습니다.",
+    "이 파일은 사람이 직접 고칩니다.",
+    "  tools/build-campus-map.mjs → public/maps/campus.svg (지도 표시)",
+    "  tools/build-graph.mjs      → data/campus-graph.json (경로 탐색용 그래프)"
+  ],
+
+  "source": "국민대 재학생 제보",
+  "revision": 3,
+
+  "//1": "── 상대 고도 모델 ──────────────────────────────────────",
+  "//1b": [
+    "운동장 지면을 0 으로 잡은 '층 단위' 상대 고도입니다.",
+    "floorIndex(f) = f > 0 ? f : f + 1   (B1 → 0, 1F → 1, B2 → -1)",
+    "elevation(건물, f) = baseElevation + (floorIndex(f) - 1)",
+    "baseElevation 이 없는 건물은 생성기가 실외 지형 보간값에서 역산합니다.",
+    "실외 지형 고도는 elevationAnchors 와 건물 지면층을 앵커로 삼아 보행 네트워크 위에서 보간합니다.",
+    "→ 경사도는 이 보간 결과에서 자동으로 나옵니다. 별도로 경사 구간을 적지 않아도 됩니다."
+  ],
+  "elevation": {
+    "unit": "floor",
+    "datum": "운동장 지면 = 0",
+    "floorHeightM": 4.0,
+    "floorHeightAssumed": true,
+    "baseElevation": {
+      "미래관": -3,
+      "종합복지관": -3,
+      "예술관": 0,
+      "경상관": 1,
+      "국제관": 1,
+      "콘서트홀": 1,
+      "경영관": 1,
+      "북악관": 5
+    },
+    "derived": [
+      "운동장(0)     = 미래관 4F = 복지관 4F = 예술관 1F = 경영관 B1",
+      "예술관 B2(-2) = 미래관 2F",
+      "정문(-2)      = 복지관 2F = 미래관 2F 높이",
+      "예술관 2F(+1) = 경상관·국제관·콘서트홀·경영관 1F = 미래관 5F = 복지관 5F",
+      "북악관 1F(+5) = 경상관·국제관·콘서트홀·경영관 5F",
+      "북악관 1F 은 미래관 최상층(7F, +3)보다 2개 층 더 높다",
+      "정문(-2) → 북악관 1F(+5) = 7개 층만큼 올라간다. 이게 캠퍼스 최대 경사 구간이다."
+    ]
+  },
+
+  "//1c": "실외 지형 고도 앵커. 좌표는 campus.svg viewBox(1000x700) 기준.",
+  "elevationAnchors": [
+    {
+      "id": "gate_main",
+      "name": "정문",
+      "x": 255.4,
+      "y": 353.0,
+      "elevation": -2,
+      "osmNode": 5505732333,
+      "note": "복지관 2층 높이. OSM barrier=lift_gate '국민대학교 정문' 실측 좌표."
+    },
+    {
+      "id": "gate_back",
+      "name": "후문",
+      "x": 956.6,
+      "y": 348.4,
+      "elevation": null,
+      "osmNode": 5316954411,
+      "note": "OSM entrance=emergency '국민대학교 후문'. 고도 미확인."
+    }
+  ],
+
+  "//2": "── 건물 내부가 동(wing)으로 갈라지는 경우 ───────────────",
+  "wings": [
+    {
+      "building": "미래관",
+      "names": ["구관", "신관"],
+      "connectedFloors": [2, 3, 4],
+      "dividerX": 567,
+      "leftName": "구관",
+      "rightName": "신관",
+      "slugs": { "구관": "old", "신관": "new" },
+      "floorRanges": {
+        "구관": { "min": -1, "max": 7 },
+        "신관": { "min": 1, "max": 7 }
+      },
+      "note": "경계는 지도상 '미래관' 라벨의 첫 글자 바로 왼쪽. 구관이 복지관(서쪽) 쪽. 2~4층에서만 구관·신관이 서로 통한다. 신관 1층은 실내에 아무것도 없고 바깥으로 나가는 통로다."
+    }
+  ],
+
+  "//3": "── 엘리베이터. servesFloors 에 없는 층은 계단으로만 갈 수 있다. ──",
+  "elevators": [
+    {
+      "id": "ev_mirae_old",
+      "building": "미래관",
+      "wing": "구관",
+      "count": 1,
+      "servesFloors": [-1, 1, 2, 3, 4, 5, 6, 7],
+      "location": "복지관 쪽 (서쪽)",
+      "note": "B1은 주차장"
+    },
+    {
+      "id": "ev_mirae_new",
+      "building": "미래관",
+      "wing": "신관",
+      "count": 1,
+      "servesFloors": [1, 2, 3, 4, 5, 6, 7],
+      "location": "신관 (동쪽)"
+    },
+    {
+      "id": "ev_welfare_center",
+      "building": "종합복지관",
+      "count": 2,
+      "servesFloors": [-1, 1, 2, 3, 4, 5],
+      "location": "건물 가운데"
+    },
+    {
+      "id": "ev_welfare_gate",
+      "building": "종합복지관",
+      "count": 1,
+      "servesFloors": [-1, 1, 2, 3, 4, 5],
+      "location": "정문 쪽"
+    },
+    {
+      "id": "ev_art",
+      "building": "예술관",
+      "count": 1,
+      "servesFloors": [-2, -1, 1, 2, 3, 4],
+      "location": "미확인"
+    },
+    {
+      "id": "ev_econ",
+      "building": "경상관",
+      "count": 1,
+      "servesFloors": [1, 2, 3, 4, 5],
+      "location": "미확인"
+    },
+    {
+      "id": "ev_intl",
+      "building": "국제관",
+      "count": 1,
+      "servesFloors": [1, 2, 3, 4, 5],
+      "location": "미확인"
+    },
+    {
+      "id": "ev_concert",
+      "building": "콘서트홀",
+      "count": 1,
+      "servesFloors": [1, 2, 3, 4, 5],
+      "location": "미확인"
+    },
+    {
+      "id": "ev_biz",
+      "building": "경영관",
+      "count": 1,
+      "servesFloors": [-1, 1, 2, 3, 4, 5],
+      "location": "미확인",
+      "note": "B1 에서 예술관 1층으로 나갈 수 있다"
+    },
+    {
+      "id": "ev_engineering",
+      "building": "공학관",
+      "count": 1,
+      "servesFloors": [1, 2, 3, 4, 5],
+      "location": "산학협력관 쪽 (서쪽)",
+      "note": "B1 은 정차하지 않는다"
+    },
+    {
+      "id": "ev_iprc",
+      "building": "산학협력관",
+      "count": 1,
+      "servesFloors": [-1, 1, 2, 3, 4, 5],
+      "location": "건물 중앙"
+    },
+    {
+      "id": "ev_bukak_left",
+      "building": "북악관",
+      "count": 2,
+      "servesFloors": [1, 2, 5, 7, 9, 11, 14],
+      "location": "좌측",
+      "note": "이 층들은 좌측 엘리베이터만 정차한다"
+    },
+    {
+      "id": "ev_bukak_right",
+      "building": "북악관",
+      "count": 3,
+      "servesFloors": [1, 3, 4, 6, 8, 10, 12, 13, 15, 16],
+      "location": "우측",
+      "note": "1층은 좌우 공용. 15·16층은 우측만 정차한다."
+    }
+  ],
+
+  "//4": "── 건물 사이 연결 ──────────────────────────────────────",
+  "connections": [
+    {
+      "id": "conn_mirae_welfare_indoor",
+      "a": { "building": "미래관", "wing": "구관", "floors": [2, 3, 4] },
+      "b": { "building": "종합복지관", "floors": [2, 3, 4] },
+      "pairing": "same_floor",
+      "indoor": true,
+      "barrierFree": true,
+      "note": "같은 층끼리 실내로 연결 (2F↔2F, 3F↔3F, 4F↔4F). 미래관 쪽은 구관."
+    },
+    {
+      "id": "conn_mirae_welfare_outdoor",
+      "a": { "building": "미래관", "wing": "신관", "floors": [1] },
+      "b": { "building": "종합복지관", "floors": [1] },
+      "pairing": "same_floor",
+      "indoor": false,
+      "barrierFree": true,
+      "note": "미래관 신관 1층은 밖으로 나가는 통로다. 바깥 길을 지나 복지관 1층과 이어진다. 비를 맞는 구간."
+    },
+    {
+      "id": "conn_mirae_art",
+      "a": { "building": "미래관", "wing": "신관", "floors": [2] },
+      "b": { "building": "예술관", "floors": [-2] },
+      "pairing": "explicit",
+      "indoor": true,
+      "barrierFree": true,
+      "note": "미래관 2층 = 예술관 B2 (고도 -2)"
+    },
+    {
+      "id": "conn_biz_art",
+      "a": { "building": "경영관", "floors": [-1] },
+      "b": { "building": "예술관", "floors": [1] },
+      "pairing": "explicit",
+      "indoor": true,
+      "barrierFree": true,
+      "note": "경영관 B1 = 예술관 1층 = 운동장 높이(0)"
+    },
+    {
+      "id": "conn_econ_intl",
+      "a": { "building": "경상관", "floors": [1, 5] },
+      "b": { "building": "국제관", "floors": [1, 5] },
+      "pairing": "same_floor",
+      "indoor": true,
+      "barrierFree": true,
+      "note": "1층과 5층에서만 연결. 2~4층은 서로 통하지 않는다."
+    },
+    {
+      "id": "conn_intl_concert",
+      "a": { "building": "국제관", "floors": [1, 5] },
+      "b": { "building": "콘서트홀", "floors": [1, 5] },
+      "pairing": "same_floor",
+      "indoor": true,
+      "barrierFree": true
+    },
+    {
+      "id": "conn_concert_biz",
+      "a": { "building": "콘서트홀", "floors": [1, 5] },
+      "b": { "building": "경영관", "floors": [1, 5] },
+      "pairing": "same_floor",
+      "indoor": true,
+      "barrierFree": true
+    },
+    {
+      "id": "conn_engineering_iprc",
+      "a": { "building": "공학관", "floors": [1] },
+      "b": { "building": "산학협력관", "floors": [1] },
+      "pairing": "same_floor",
+      "indoor": true,
+      "barrierFree": true,
+      "note": "1층만 연결된다"
+    }
+  ],
+
+  "//5": "── 명시적으로 '연결되지 않은' 것들 ─────────────────────",
+  "notConnected": [
+    {
+      "a": { "building": "미래관", "floors": [5, 6, 7] },
+      "b": { "building": "*" },
+      "reason": "미래관 5층 이상은 다른 건물이나 지면과 전혀 연결되지 않는다. 미래관 내부로만 이동 가능."
+    },
+    {
+      "a": { "building": "미래관" },
+      "b": { "building": "북악관" },
+      "reason": "미래관에서 북악관으로 바로 이어지는 실내 경로는 없다. 북악관 1층이 미래관 옥상보다 높다."
+    },
+    {
+      "a": { "building": "종합복지관", "floors": [-1] },
+      "b": { "building": "미래관", "floors": [-1] },
+      "reason": "고도는 둘 다 -4 로 같지만 B1끼리 통하지 않는다."
+    },
+    {
+      "a": { "building": "경상관", "floors": [2, 3, 4] },
+      "b": { "building": "국제관", "floors": [2, 3, 4] },
+      "reason": "경상관·국제관·콘서트홀·경영관은 1층과 5층에서만 연결된다."
+    },
+    {
+      "a": { "building": "공학관", "floors": [-1, 2, 3, 4, 5] },
+      "b": { "building": "산학협력관" },
+      "reason": "공학관과 산학협력관은 1층에서만 연결된다."
+    }
+  ],
+
+  "//5b": [
+    "── 직접 추가한 실외 보행 공간 ──────────────────────────",
+    "OSM 에 보행로로 등록되지 않은, 사람이 자유롭게 다니는 열린 공간을 여기에 적는다.",
+    "좌표는 campus.svg viewBox(1000x700) 기준. elevation 은 층 단위(운동장=0).",
+    "elevation 을 적은 노드는 지형 고도 보간의 앵커가 된다.",
+    "linkOsm: true 면 가장 가까운 OSM 보행로 노드와 자동으로 이어 붙인다."
+  ],
+  "outdoorAreas": [
+    {
+      "id": "plaza_mid",
+      "name": "예술관·미래관·경영관 사이 광장",
+      "note": "사람이 자유롭게 다니는 열린 공간. 운동장에서 복지관까지 이어진다. 광장 안에 외부 계단이 있어 미래관 4층(=예술관 1층) 높이에서 경영관 1층 높이로 올라갈 수 있다.",
+      "nodes": [
+        { "id": "welfare_way", "x": 520, "y": 452, "elevation": 0, "label": "복지관 가는 길", "linkOsm": true },
+        { "id": "field_se", "x": 568, "y": 460, "elevation": 0, "label": "운동장 남동쪽", "linkOsm": true },
+        { "id": "center", "x": 600, "y": 470, "elevation": 0, "label": "광장 중앙" },
+        { "id": "mirae_side", "x": 600, "y": 490, "elevation": 0, "label": "미래관 앞 (4층 높이)" },
+        { "id": "art_side", "x": 640, "y": 470, "elevation": 0, "label": "예술관 앞 (1층 높이)" },
+        { "id": "stair_low", "x": 614, "y": 452, "elevation": 0, "label": "광장 계단 아래" },
+        { "id": "stair_high", "x": 632, "y": 442, "elevation": 1, "label": "광장 계단 위" },
+        { "id": "biz_side", "x": 648, "y": 448, "elevation": 1, "label": "경영관 앞 (1층 높이)" }
+      ],
+      "//edges": "열린 공간이므로 서로 촘촘히 잇는다. 사람은 실제로 직선으로 가로지른다.",
+      "edges": [
+        { "from": "welfare_way", "to": "field_se" },
+        { "from": "field_se", "to": "center" },
+        { "from": "field_se", "to": "mirae_side" },
+        { "from": "center", "to": "mirae_side" },
+        { "from": "center", "to": "art_side" },
+        { "from": "mirae_side", "to": "art_side" },
+        { "from": "center", "to": "stair_low" },
+        { "from": "art_side", "to": "stair_low" },
+        { "from": "stair_low", "to": "stair_high", "steps": 24, "note": "광장 외부 계단 (한 층)" },
+        { "from": "stair_high", "to": "biz_side" }
+      ],
+      "buildingLinks": [
+        { "node": "welfare_way", "building": "종합복지관", "floor": 4 },
+        { "node": "mirae_side", "building": "미래관", "wing": "구관", "floor": 4 },
+        { "node": "mirae_side", "building": "미래관", "wing": "신관", "floor": 4 },
+        { "node": "art_side", "building": "예술관", "floor": 1 },
+        { "node": "biz_side", "building": "경영관", "floor": 1 }
+      ]
+    }
+  ],
+
+  "//6": "── 건물 ↔ 실외 지면 접점. x,y 가 있으면 그 위치를, 없으면 건물 무게중심을 쓴다. ──",
+  "groundEntries": [
+    { "building": "미래관", "floor": 4, "to": "운동장 (북서쪽)", "wing": "구관", "x": 532, "y": 492 },
+    { "building": "미래관", "floor": 1, "to": "신관 1층 통로 (바깥)", "wing": "신관", "x": 640, "y": 624 },
+    { "building": "종합복지관", "floor": 4, "to": "운동장", "x": 420, "y": 420 },
+    { "building": "종합복지관", "floor": 1, "to": "미래관 신관 쪽 바깥 길", "x": 378, "y": 538 },
+    { "building": "경영관", "floor": 1, "to": "경영관 앞 지면 (북쪽)", "x": 700, "y": 392 },
+    { "building": "경상관", "floor": 1, "to": "경상관 앞 지면", "x": 505, "y": 260 },
+    { "building": "국제관", "floor": 1, "to": "국제관 앞 지면", "x": 578, "y": 318 },
+    { "building": "콘서트홀", "floor": 1, "to": "콘서트홀 앞 지면", "x": 620, "y": 356 },
+    { "building": "북악관", "floor": 1, "to": "북악관 앞 지면" },
+    {
+      "building": "공학관",
+      "floor": 1,
+      "to": "북동쪽 출입구",
+      "x": 240,
+      "y": 150,
+      "note": "지도 오른쪽 위"
+    },
+    {
+      "building": "공학관",
+      "floor": -1,
+      "to": "남동쪽 출입구 (농구장 부근)",
+      "x": 240,
+      "y": 310,
+      "note": "지도 오른쪽 아래"
+    },
+    { "building": "산학협력관", "floor": 1, "to": "산학협력관 앞" }
+  ],
+
+  "//7": "── 건물별 존재하는 층 범위 ──────────────────────────────",
+  "floorRanges": [
+    { "building": "미래관", "min": -1, "max": 7 },
+    { "building": "종합복지관", "min": -1, "max": 5 },
+    { "building": "예술관", "min": -2, "max": 4 },
+    { "building": "경영관", "min": -1, "max": 5 },
+    { "building": "경상관", "min": 1, "max": 5 },
+    { "building": "국제관", "min": 1, "max": 5 },
+    { "building": "콘서트홀", "min": 1, "max": 5 },
+    { "building": "공학관", "min": -1, "max": 5 },
+    { "building": "산학협력관", "min": -1, "max": 5 },
+    { "building": "북악관", "min": 1, "max": 16 }
+  ],
+
+  "//8": "── 남은 확인 사항 ──────────────────────────────────────",
+  "openQuestions": [
+    "층고 실측값 (현재 4.0m 로 가정하고 모든 고도·경사를 계산하고 있다)",
+    "공학관·산학협력관의 지면 고도 (현재 실외 지형 보간값에서 역산 중)",
+    "공학관 최상층이 5층인지 (엘리베이터가 5층까지라는 것만 알고 있다)",
+    "엘리베이터 위치 상세 (예술관·경상관·국제관·콘서트홀·경영관은 '미확인')",
+    "정보 없는 건물들: 조형관·본부관·법학관·과학관·체육관·성곡도서관·글로벌센터·생활관·영빈관·평생교육실기관",
+    "각 건물의 정확한 실외 출입구 (OSM 에 북악관·본부관·법학관·체육관만 entrance 태그가 있다)"
+  ]
+}

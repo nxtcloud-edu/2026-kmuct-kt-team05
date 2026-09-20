@@ -1,0 +1,211 @@
+{
+  "_readme": [
+    "tools/build-campus-map.mjs 가 생성한 파일입니다. 직접 수정하지 마세요.",
+    "OSM 실측 좌표를 campus.svg 의 viewBox(1000x700)로 투영한 결과입니다.",
+    "accessNodeDistUnits = 건물 무게중심에서 가장 가까운 보행로 노드까지의 거리(SVG 단위).",
+    "이 값이 크면 그 건물은 보행로 연결이 부실하다는 뜻이다.",
+    "출처: © OpenStreetMap contributors (ODbL)"
+  ],
+  "viewBox": {
+    "width": 1000,
+    "height": 700
+  },
+  "bounds": {
+    "lonMin": 126.9929,
+    "lonMax": 126.9999,
+    "latMin": 37.60922,
+    "latMax": 37.61311
+  },
+  "metersPerUnitX": 0.617,
+  "buildings": [
+    {
+      "name": "성곡도서관",
+      "slug": "library",
+      "levels": null,
+      "x": 105.4,
+      "y": 59.8,
+      "suggestedNodeId": "out_library",
+      "accessNodeDistUnits": 74.1
+    },
+    {
+      "name": "글로벌 센터",
+      "slug": "global",
+      "levels": null,
+      "x": 105.7,
+      "y": 114.9,
+      "suggestedNodeId": "out_global",
+      "accessNodeDistUnits": 37.3
+    },
+    {
+      "name": "북악관",
+      "slug": "bukak",
+      "levels": 16,
+      "x": 567.7,
+      "y": 154.7,
+      "suggestedNodeId": "out_bukak",
+      "accessNodeDistUnits": 41.1
+    },
+    {
+      "name": "조형관",
+      "slug": "johyung",
+      "levels": null,
+      "x": 670.4,
+      "y": 172.6,
+      "suggestedNodeId": "out_johyung",
+      "accessNodeDistUnits": 51.3
+    },
+    {
+      "name": "산학협력관",
+      "slug": "iprc",
+      "levels": null,
+      "x": 81.5,
+      "y": 219,
+      "suggestedNodeId": "out_iprc",
+      "accessNodeDistUnits": 81.2
+    },
+    {
+      "name": "공학관",
+      "slug": "engineering",
+      "levels": null,
+      "x": 159.3,
+      "y": 228.2,
+      "suggestedNodeId": "out_engineering",
+      "accessNodeDistUnits": 5.8
+    },
+    {
+      "name": "과학관",
+      "slug": "science",
+      "levels": null,
+      "x": 919.5,
+      "y": 264.3,
+      "suggestedNodeId": "out_science",
+      "accessNodeDistUnits": 78.8
+    },
+    {
+      "name": "본부관",
+      "slug": "hq",
+      "levels": 5,
+      "x": 653.9,
+      "y": 265.2,
+      "suggestedNodeId": "out_hq",
+      "accessNodeDistUnits": 21.1
+    },
+    {
+      "name": "경상관",
+      "slug": "econ",
+      "levels": 6,
+      "x": 508.6,
+      "y": 287.4,
+      "suggestedNodeId": "out_econ",
+      "accessNodeDistUnits": 33.1
+    },
+    {
+      "name": "법학관",
+      "slug": "law",
+      "levels": null,
+      "x": 765.9,
+      "y": 324,
+      "suggestedNodeId": "out_law",
+      "accessNodeDistUnits": 31.7
+    },
+    {
+      "name": "국제관",
+      "slug": "intl",
+      "levels": 6,
+      "x": 581.1,
+      "y": 341.5,
+      "suggestedNodeId": "out_intl",
+      "accessNodeDistUnits": 42.5
+    },
+    {
+      "name": "체육관",
+      "slug": "gym",
+      "levels": null,
+      "x": 817.2,
+      "y": 372.1,
+      "suggestedNodeId": "out_gym",
+      "accessNodeDistUnits": 48.6
+    },
+    {
+      "name": "콘서트홀",
+      "slug": "concert",
+      "levels": null,
+      "x": 621.9,
+      "y": 378.3,
+      "suggestedNodeId": "out_concert",
+      "accessNodeDistUnits": 37
+    },
+    {
+      "name": "생활관 D",
+      "slug": "dorm_d",
+      "levels": null,
+      "x": 872.3,
+      "y": 391.1,
+      "suggestedNodeId": "out_dorm_d",
+      "accessNodeDistUnits": 10.4
+    },
+    {
+      "name": "경영관",
+      "slug": "biz",
+      "levels": null,
+      "x": 675.8,
+      "y": 416.5,
+      "suggestedNodeId": "out_biz",
+      "accessNodeDistUnits": 34.7
+    },
+    {
+      "name": "영빈관",
+      "slug": "guest",
+      "levels": null,
+      "x": 831.9,
+      "y": 455.7,
+      "suggestedNodeId": "out_guest",
+      "accessNodeDistUnits": 25.3
+    },
+    {
+      "name": "종합복지관",
+      "slug": "welfare",
+      "levels": 6,
+      "x": 418.2,
+      "y": 473.7,
+      "suggestedNodeId": "out_welfare",
+      "accessNodeDistUnits": 13.8
+    },
+    {
+      "name": "예술관",
+      "slug": "art",
+      "levels": null,
+      "x": 693.2,
+      "y": 529,
+      "suggestedNodeId": "out_art",
+      "accessNodeDistUnits": 49.6
+    },
+    {
+      "name": "생활관",
+      "slug": "dorm",
+      "levels": null,
+      "x": 831,
+      "y": 550.6,
+      "suggestedNodeId": "out_dorm",
+      "accessNodeDistUnits": 21.8
+    },
+    {
+      "name": "미래관",
+      "slug": "mirae",
+      "levels": 7,
+      "x": 588.9,
+      "y": 559.5,
+      "suggestedNodeId": "out_mirae",
+      "accessNodeDistUnits": 31.6
+    },
+    {
+      "name": "평생교육실기관",
+      "slug": "lifelong",
+      "levels": null,
+      "x": 749.5,
+      "y": 657.6,
+      "suggestedNodeId": "out_lifelong",
+      "accessNodeDistUnits": 39.7
+    }
+  ]
+}
