@@ -216,13 +216,33 @@
       <path d="M648 448 L600 405" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
       <path d="M600 405 L545 385" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
       <path d="M545 385 L505 330" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
-      <path d="M600 405 L600 470" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
-      <path d="M600 405 L640 470" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
-      <path d="M545 385 L568 460" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
-      <path d="M505 330 L520 452" fill="none" stroke="#e3e9f0" stroke-width="11" stroke-linecap="round" />
+      <path d="M600 405 L600 470" fill="none" stroke="#a78bfa" stroke-width="9" stroke-linecap="round" />
+      <path d="M600 405 L600 470" fill="none" stroke="#ffffff" stroke-width="9" stroke-dasharray="1.5 4" />
+      <path d="M600 405 L640 470" fill="none" stroke="#a78bfa" stroke-width="9" stroke-linecap="round" />
+      <path d="M600 405 L640 470" fill="none" stroke="#ffffff" stroke-width="9" stroke-dasharray="1.5 4" />
+      <path d="M545 385 L568 460" fill="none" stroke="#a78bfa" stroke-width="9" stroke-linecap="round" />
+      <path d="M545 385 L568 460" fill="none" stroke="#ffffff" stroke-width="9" stroke-dasharray="1.5 4" />
+      <path d="M505 330 L520 452" fill="none" stroke="#a78bfa" stroke-width="9" stroke-linecap="round" />
+      <path d="M505 330 L520 452" fill="none" stroke="#ffffff" stroke-width="9" stroke-dasharray="1.5 4" />
       <g>
         <rect x="598.4" y="425" width="49.2" height="16" rx="8" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.2" />
         <text x="623" y="437" font-size="9.5" font-weight="700" fill="#6d28d9" text-anchor="middle">계단 24칸</text>
+      </g>
+      <g>
+        <rect x="575.4" y="415.5" width="49.2" height="16" rx="8" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.2" />
+        <text x="600" y="427.5" font-size="9.5" font-weight="700" fill="#6d28d9" text-anchor="middle">계단 24칸</text>
+      </g>
+      <g>
+        <rect x="595.4" y="415.5" width="49.2" height="16" rx="8" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.2" />
+        <text x="620" y="427.5" font-size="9.5" font-weight="700" fill="#6d28d9" text-anchor="middle">계단 24칸</text>
+      </g>
+      <g>
+        <rect x="531.9" y="400.5" width="49.2" height="16" rx="8" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.2" />
+        <text x="556.5" y="412.5" font-size="9.5" font-weight="700" fill="#6d28d9" text-anchor="middle">계단 24칸</text>
+      </g>
+      <g>
+        <rect x="487.9" y="369" width="49.2" height="16" rx="8" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.2" />
+        <text x="512.5" y="381" font-size="9.5" font-weight="700" fill="#6d28d9" text-anchor="middle">계단 24칸</text>
       </g>
       <text x="588.4" y="406.7" font-size="10.5" font-weight="700" fill="#64748b" text-anchor="middle"
               stroke="#ffffff" stroke-width="3" paint-order="stroke">자유 통행 공간</text>

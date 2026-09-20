@@ -273,6 +273,8 @@ let manualNodeCount = 0;
 let manualEdgeCount = 0;
 /** { node, building, wing, floor } */
 const buildingLinks = [];
+/** 고도차가 있는데 계단 표시가 없어 자동으로 계단 처리한 구간 */
+const elevationJumps = [];
 
 const areaNodeKey = (areaId, nodeId) => `p_${areaId}_${nodeId}`;
 
@@ -310,15 +312,33 @@ for (const area of facts.outdoorAreas ?? []) {
     const pa = netXY.get(a);
     const pb = netXY.get(b);
     const distM = Math.max(2, Math.hypot(pa.x - pb.x, pa.y - pb.y) * METERS_PER_UNIT);
-    const steps = Number(e.steps) > 0;
-    netEdges.push({
-      a,
-      b,
-      distM,
-      steps,
-      stepCount: steps ? Number(e.steps) : 0,
-      note: e.note ?? area.name,
-    });
+
+    let steps = Number(e.steps) > 0;
+    let stepCount = steps ? Number(e.steps) : 0;
+    let note = e.note ?? area.name;
+
+    /**
+     * 안전장치: 고도를 명시한 두 노드를 '계단도 경사로도 아닌' 엣지로 이으면
+     * 존재하지 않는 평지 통로를 만드는 셈이다. 그러면 계단최소·무장애 모드가
+     * 실제로는 계단인 길을 '계단 0칸'으로 안내한다.
+     * 경사로가 맞다면 facts 에서 "ramp": true 를 명시해야 한다.
+     */
+    const ea = manualElevation.get(a);
+    const eb = manualElevation.get(b);
+    if (!steps && e.ramp !== true && ea !== undefined && eb !== undefined) {
+      const drop = Math.abs(ea - eb);
+      if (drop >= 1) {
+        steps = true;
+        stepCount = Math.round(drop * STEPS_PER_FLOOR);
+        note = `${note} · 고도차 ${drop}층을 계단으로 처리`;
+        elevationJumps.push(
+          `${area.id}: ${e.from}(${ea}) ↔ ${e.to}(${eb}) 고도차 ${drop}층인데 계단 표시가 없어 ` +
+            `계단 ${stepCount}칸으로 처리했습니다. 경사로라면 "ramp": true 를 넣으세요.`,
+        );
+      }
+    }
+
+    netEdges.push({ a, b, distM, steps, stepCount, note });
     manualEdgeCount += 1;
   }
 
@@ -334,6 +354,12 @@ for (const area of facts.outdoorAreas ?? []) {
 
 if (manualNodeCount > 0) {
   console.log(`직접 추가한 실외 노드 ${manualNodeCount}개, 엣지 ${manualEdgeCount}개`);
+}
+if (elevationJumps.length > 0) {
+  console.log('');
+  console.log(`⚠️ 고도차가 있는데 계단 표시가 없던 구간 ${elevationJumps.length}개:`);
+  for (const j of elevationJumps) console.log(`   ${j}`);
+  console.log('');
 }
 
 const netNodes = new Set(netXY.keys());
