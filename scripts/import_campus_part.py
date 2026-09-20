@@ -42,14 +42,16 @@ sys.path.insert(0, str(ROOT))
 from backend.app.models.schema import Verification  # noqa: E402
 
 #: 팀원 그래프 위치.
-#: 통합 저장소 안에서는 저장소 루트의 data/ 를 직접 읽는다 (파일을 복사해
-#: 두 벌로 관리하면 갱신 시 어긋난다). 단독으로 쓸 때는 data/external/ 에
-#: 복사해 두면 그것을 쓴다.
+#: data/upstream/ 에 사본을 둔다. 배포 브랜치에서는 팀원 Next.js 앱을 빼기 때문에
+#: 저장소 루트의 data/ 에 의존할 수 없다. 통합 저장소에서 쓸 때는 루트를 본다.
 def _pick(local: pathlib.Path, repo_root_rel: str) -> pathlib.Path:
+    upstream = ROOT / "data" / "upstream" / local.name
+    if upstream.exists():
+        return upstream
     if local.exists():
         return local
     cand = ROOT.parent / repo_root_rel
-    return cand if cand.exists() else local
+    return cand if cand.exists() else upstream
 
 
 EXT = _pick(ROOT / "data" / "external" / "campus-graph.json",

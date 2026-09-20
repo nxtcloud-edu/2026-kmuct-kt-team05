@@ -47,8 +47,8 @@ DEFAULT_GRAPH = os.environ.get("NAV_GRAPH_KEY", "campus")
 PLAN_DIRS = [
     ROOT / "data" / "raw" / "navmaps",
     ROOT / "data" / "raw" / "floorplans",
-    # 통합 저장소에서는 팀원 앱의 지도 자산(캠퍼스 배치도 등)을 그대로 쓴다.
-    # 복사해 두 벌로 관리하지 않는다.
+    # 통합 저장소에서 팀원 앱과 함께 쓸 때의 자산 위치.
+    # 배포 브랜치에는 팀원 앱이 없으며, 필요한 배치도는 navmaps 에 사본이 있다.
     ROOT.parent / "public" / "maps",
 ]
 HERE = pathlib.Path(__file__).resolve().parent
@@ -289,10 +289,28 @@ class H(BaseHTTPRequestHandler):
 
 
 def main() -> None:
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
-    srv = ThreadingHTTPServer(("127.0.0.1", port), H)
-    print(f"\n데모 서버: http://127.0.0.1:{port}")
-    print("  (로컬 전용. 인증 없음)")
+    """포트와 바인딩 주소를 인자/환경변수로 받는다.
+
+    포트    argv[1] > 환경변수 PORT > 8765
+    주소    환경변수 NAV_HOST > 127.0.0.1
+
+    기본값을 127.0.0.1 로 둔 것은 의도한 것이다. 이 서버는 인증이 없어서
+    실수로 외부에 열리면 안 된다. 배포할 때만 NAV_HOST=0.0.0.0 을 준다.
+    AWS(App Runner / Elastic Beanstalk)는 컨테이너 밖에서 접속하므로
+    0.0.0.0 으로 바인딩하지 않으면 헬스체크까지 실패한다.
+    """
+    if len(sys.argv) > 1:
+        port = int(sys.argv[1])
+    else:
+        port = int(os.environ.get("PORT", 8765))
+    host = os.environ.get("NAV_HOST", "127.0.0.1")
+    srv = ThreadingHTTPServer((host, port), H)
+    shown = "localhost" if host == "127.0.0.1" else host
+    print(f"\n데모 서버: http://{shown}:{port}  (bind {host})")
+    if host != "127.0.0.1":
+        print("  [경고] 외부에 열려 있고 인증이 없다. 접근 제한을 걸 것.")
+    else:
+        print("  (로컬 전용. 인증 없음. 배포 시 NAV_HOST=0.0.0.0)")
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

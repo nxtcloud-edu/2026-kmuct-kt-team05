@@ -30,7 +30,14 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-SRC = ROOT.parent / "public" / "maps" / "campus.svg"
+#: 원본 배치도. data/upstream/ 사본을 먼저 보고, 없으면 저장소 루트의
+#: 팀원 앱 자산을 본다. 배포 브랜치에는 팀원 앱이 없으므로 사본이 필요하다.
+def _src_svg() -> pathlib.Path:
+    up = ROOT / "data" / "upstream" / "campus.svg"
+    return up if up.exists() else ROOT.parent / "public" / "maps" / "campus.svg"
+
+
+SRC = _src_svg()
 DST = ROOT / "data" / "raw" / "navmaps" / "campus.svg"
 
 #: 이 문구를 담은 <g> 묶음을 통째로 지운다 (알약 배경 rect 까지 함께).

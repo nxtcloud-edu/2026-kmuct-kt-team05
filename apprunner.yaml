@@ -1,0 +1,18 @@
+# AWS App Runner 설정
+#
+# 빌드 단계가 없다. 경로 그래프(data/published/campus_v1.json)를 커밋해 두었고
+# 런타임 의존성이 없어서, 클론 후 바로 실행된다.
+#
+# 주의: 이 서버는 인증이 없다. App Runner 로 공개하면 누구나 접근한다.
+# 시연용으로만 쓰고, 필요하면 앞단에서 접근을 제한할 것.
+version: 1.0
+runtime: python3
+build:
+  commands:
+    build:
+      - echo "빌드 단계 없음 - 표준 라이브러리만 사용하고 데이터는 커밋되어 있다"
+run:
+  runtime-version: 3.11
+  command: python3 demo/server.py 8080
+  network:
+    port: 8080
