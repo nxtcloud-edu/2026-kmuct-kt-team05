@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>selftest</title>
+<script>
+  window.__errors = [];
+  window.onerror = function (msg, src, line, col) {
+    window.__errors.push(msg + ' @' + (src || '').split('/').pop() + ':' + line + ':' + col);
+  };
+</script>
+<script src="../js/data.js"></script>
+<script src="../js/graph.js"></script>
+<script src="../js/parse.js"></script>
+<script src="../js/render.js"></script>
+</head>
+<body>
+<pre id="out">(not run)</pre>
+<script>
+(function () {
+  var lines = [];
+  var pass = 0, fail = 0;
+
+  function ok(name, cond, extra) {
+    if (cond) { pass++; lines.push('PASS  ' + name + (extra ? '  [' + extra + ']' : '')); }
+    else      { fail++; lines.push('FAIL  ' + name + (extra ? '  [' + extra + ']' : '')); }
+  }
+
+  function info(s) { lines.push('      ' + s); }
+
+  try {
+    /* --- 스크립트 로딩 --------------------------------------------------- */
+    ok('data.js 로드', typeof BUILDINGS !== 'undefined' && BUILDINGS.length > 0, BUILDINGS.length + '개 건물');
+    ok('graph.js 로드', typeof findRoute === 'function');
+    ok('parse.js 로드', typeof parseQuery === 'function');
+    ok('render.js 로드', typeof MapView === 'object' && typeof MapView.init === 'function');
+
+    /* --- 데이터 건강검진 ------------------------------------------------- */
+    var hc = healthCheck();
+    ok('데이터 오류 없음', hc.errors.length === 0, hc.errors.join(' | ') || 'clean');
+    info('통계: 건물 ' + hc.stats.buildings + ', 교차점 ' + hc.stats.junctions +
+         ', 엣지 ' + hc.stats.edges + ', 방향엣지 ' + hc.stats.directedEdges +
+         ', 미확인 ' + hc.stats.unverified);
+    info('경고 ' + hc.warnings.length + '건');
+    hc.warnings.slice(0, 3).forEach(function (w) { info('  - ' + w); });
+
+    /* --- 기본 경로 탐색 ------------------------------------------------- */
+    var r1 = findRoute('gate_main', 'bukak', 'fastest');
+    ok('정문→북악관 경로 존재', r1.ok, r1.ok ? Math.round(r1.totals.dist) + 'm / ' + r1.totals.minutes + '분 / 계단 ' + r1.totals.stairsUp + '칸' : r1.reason);
+
+    var r2 = findRoute('mirae', 'johyung', 'fastest');
+    ok('미래관→조형관 경로 존재', r2.ok, r2.ok ? Math.round(r2.totals.dist) + 'm / ' + r2.totals.minutes + '분' : r2.reason);
+
+    ok('같은 지점은 빈 경로', findRoute('bukak', 'bukak', 'fastest').ok);
+
+    var bad = findRoute('없는곳', 'bukak', 'fastest');
+    ok('없는 노드는 실패 처리', !bad.ok);
+
+    /* --- 모드별로 결과가 실제로 달라지는가 (데모 핵심) ------------------ */
+    var all = findAllRoutes('gate_main', 'bukak');
+    info('정문→북악관 모드별:');
+    Object.keys(MODES).forEach(function (m) {
+      var r = all[m];
+      info('  ' + MODES[m].label + ': ' +
+        (r.ok ? (r.totals.minutes + '분, ' + Math.round(r.totals.dist) + 'm, 계단 ' +
+                 r.totals.stairsUp + '칸, 실내 ' + Math.round(r.totals.indoorRatio * 100) + '%')
+              : '경로 없음'));
+    });
+
+    ok('계단최소 모드가 계단을 줄임',
+       all.fewStairs.ok && all.fastest.ok &&
+       all.fewStairs.totals.stairsUp < all.fastest.totals.stairsUp,
+       all.fastest.totals.stairsUp + '칸 → ' + all.fewStairs.totals.stairsUp + '칸');
+
+    ok('무장애 모드는 계단 0칸',
+       all.accessible.ok && all.accessible.totals.stairsUp === 0 && all.accessible.totals.stairsDown === 0);
+
+    var shelt = findAllRoutes('mirae', 'johyung');
+    ok('비안맞기 모드가 실내 비중을 높임',
+       shelt.sheltered.ok && shelt.fastest.ok &&
+       shelt.sheltered.totals.indoorRatio >= shelt.fastest.totals.indoorRatio,
+       Math.round(shelt.fastest.totals.indoorRatio * 100) + '% → ' +
+       Math.round(shelt.sheltered.totals.indoorRatio * 100) + '%');
+
+    /* --- 접근성 취약 구간 탐지 ------------------------------------------ */
+    var museum = findRoute('gate_main', 'museum', 'accessible');
+    ok('박물관은 무장애 경로 없음 (의도된 사례)', !museum.ok && museum.accessibilityGap === true, museum.reason);
+
+    var art = findRoute('gate_main', 'art', 'accessible');
+    ok('예술관은 무장애 경로 있음', art.ok, art.ok ? art.totals.minutes + '분, 엘리베이터 ' + art.totals.elevatorCount + '회' : art.reason);
+
+    /* --- 장소 해석 ------------------------------------------------------ */
+    var p1 = resolvePlace('북악관 411호');
+    ok('강의실 코드 → 건물+층', p1 && p1.id === 'bukak' && p1.floor === 4 && p1.room === '411',
+       p1 ? p1.name + ' ' + p1.floor + '층 ' + p1.room + '호' : 'null');
+
+    var p2 = resolvePlace('미래관');
+    ok('건물명만 입력', p2 && p2.id === 'mirae' && p2.floor === null);
+
+    var p3 = resolvePlace('7호관 302');
+    ok('별칭 인식 (7호관 → 미래관)', p3 && p3.id === 'mirae' && p3.floor === 3,
+       p3 ? p3.name + ' ' + p3.floor + '층' : 'null');
+
+    var p4 = resolvePlace('북악관 1103호');
+    ok('4자리 강의실 코드 → 11층', p4 && p4.floor === 11, p4 ? String(p4.floor) : 'null');
+
+    ok('없는 장소는 null', resolvePlace('하버드대학교') === null);
+
+    /* --- 문장 파싱 ------------------------------------------------------ */
+    var q1 = parseQuery('미래관에서 북악관 411호 가는데 계단 싫어', {});
+    ok('방향 + 모드 동시 파싱',
+       q1.fromId === 'mirae' && q1.toId === 'bukak' && q1.modeId === 'fewStairs',
+       q1.fromId + ' → ' + q1.toId + ' / ' + q1.modeId);
+    ok('도착 층 추출', q1.toPlace && q1.toPlace.floor === 4);
+
+    var q2 = parseQuery('정문에서 성곡도서관 휠체어로 갈 수 있어?', {});
+    ok('휠체어 → 무장애 모드', q2.modeId === 'accessible' && q2.toId === 'library',
+       q2.fromId + ' → ' + q2.toId + ' / ' + q2.modeId);
+
+    var q3 = parseQuery('비 오는데 미래관에서 조형관 가려면', {});
+    ok('비 → 비안맞기 모드', q3.modeId === 'sheltered' && q3.fromId === 'mirae' && q3.toId === 'johyung',
+       q3.fromId + ' → ' + q3.toId + ' / ' + q3.modeId);
+
+    var q4 = parseQuery('지각이야 정문에서 과학관 빨리', {});
+    ok('빨리 → 최단시간 모드', q4.modeId === 'fastest' && q4.toId === 'science',
+       q4.fromId + ' → ' + q4.toId + ' / ' + q4.modeId);
+
+    var q5 = parseQuery('조형관 가는 길', { fromId: 'mirae', modeId: 'fastest' });
+    ok('도착지만 말하면 출발지는 유지', q5.fromId === 'mirae' && q5.toId === 'johyung');
+
+    var q6 = parseQuery('북악관 → 예술관', {});
+    ok('화살표 표기 파싱', q6.fromId === 'bukak' && q6.toId === 'art',
+       q6.fromId + ' → ' + q6.toId);
+
+    /* --- 내레이션 ------------------------------------------------------- */
+    var nr = findRoute('mirae', 'bukak', 'fewStairs');
+    var nar = narrate(nr, { toFloor: 4, toRoom: '411' });
+    ok('단계 안내 생성', nar.steps.length >= 3, nar.steps.length + '단계');
+    ok('요약 문자열 생성', nar.summary.indexOf('분') !== -1, nar.summary);
+    ok('도착 층 안내 포함',
+       nar.steps.some(function (s) { return s.text.indexOf('4층') !== -1; }));
+    info('안내 예시:');
+    nar.steps.forEach(function (s) { info('  ' + s.icon + ' ' + s.text); });
+    info('문장: ' + nar.sentence);
+
+    /* --- 모드 비교 인사이트 --------------------------------------------- */
+    var ins = modeInsights(all, 'fastest');
+    ok('모드 비교 인사이트 생성', ins.length > 0, ins.length + '건');
+    ins.forEach(function (i) { info('  [' + i.level + '] ' + i.text); });
+
+    /* --- 출발 시각 판단 ------------------------------------------------- */
+    var now = new Date(2026, 8, 20, 9, 0, 0);
+    var la1 = leaveAdvice(r1, '09:30', now);
+    ok('여유 있을 때 안내', la1 && la1.level === 'good', la1 ? la1.text : 'null');
+    var la2 = leaveAdvice(r1, '09:05', now);
+    ok('늦을 때 경고', la2 && la2.level === 'alert', la2 ? la2.text : 'null');
+    ok('시간 형식 틀리면 null', leaveAdvice(r1, 'abc', now) === null);
+
+    /* --- 렌더러 (DOM 붙여서) -------------------------------------------- */
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.id = 'map';
+    document.body.appendChild(svg);
+    var selected = null;
+    MapView.init({ svg: svg, onSelect: function (id) { selected = id; } });
+    ok('지도 렌더 성공', svg.querySelectorAll('#layer-nodes .map-node').length === BUILDINGS.length,
+       svg.querySelectorAll('#layer-nodes .map-node').length + '개 노드 렌더');
+    ok('보행로 렌더', svg.querySelectorAll('#layer-edges line').length === EDGES.length,
+       svg.querySelectorAll('#layer-edges line').length + '개');
+    MapView.setEndpoints('mirae', 'bukak');
+    MapView.showRoute(nr);
+    ok('경로 오버레이 렌더', svg.querySelectorAll('#layer-route line').length === nr.segments.length,
+       svg.querySelectorAll('#layer-route line').length + '구간');
+    MapView.fitRoute(nr);
+    ok('경로 맞춤 줌 동작', svg.getAttribute('viewBox') !== '0 0 829 591', svg.getAttribute('viewBox'));
+    MapView.resetZoom();
+    MapView.clearRoute();
+    ok('경로 지우기', svg.querySelectorAll('#layer-route line').length === 0);
+
+    /* --- LLM 래퍼 (키 없이) --------------------------------------------- */
+    ok('키 없으면 AI 비활성', LLM.available() === false);
+
+  } catch (e) {
+    fail++;
+    lines.push('EXCEPTION  ' + e.message);
+    lines.push(String(e.stack || '').split('\n').slice(0, 5).join('\n'));
+  }
+
+  if (window.__errors.length) {
+    lines.push('');
+    lines.push('스크립트 오류 ' + window.__errors.length + '건:');
+    window.__errors.forEach(function (e) { lines.push('  ' + e); });
+    fail += window.__errors.length;
+  }
+
+  lines.unshift('==== 결과: ' + pass + ' PASS / ' + fail + ' FAIL ====');
+  document.getElementById('out').textContent = lines.join('\n');
+})();
+</script>
+</body>
+</html>
