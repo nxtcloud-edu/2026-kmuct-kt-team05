@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # Vercel
 .vercel
+
+# 로컬 dev 서버 로그
+dev*.log

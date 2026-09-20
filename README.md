@@ -1,121 +1,134 @@
-# 국민대 길찾기 — 통합 저장소
-
-두 프로젝트가 한 저장소에 공존한다. 서로 다른 범위를 담당하고, 아직 **데이터가
-연결되어 있지는 않다** (아래 「다음 단계」 참고).
+# 국민대 길찾기 — 통합
 
 ```
-/                    실외 + 캠퍼스 전역 길찾기        Next.js + TypeScript   담당 jihun335
-kmu-indoor-nav/      미래관 실내 상세 길찾기          Python                 담당 taegon6
+/                    캠퍼스 전역 길찾기 (Next.js + TS)   담당 jihun335
+kmu-indoor-nav/      미래관 실내 데이터 생성 (Python)     담당 taegon6
 ```
 
-## 1. 루트 — 캠퍼스 전역 (Next.js)
+**미래관은 실내 그래프를 기준으로 쓰고, 실외와 다른 건물은 팀원 그래프를 쓴다.**
+두 데이터가 실제로 이어져 있어서, 캠퍼스 어디서든 미래관 호실까지 경로가 나온다.
+
+## 실행
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm run typecheck  # 통과 확인됨
-npm run build      # 통과 확인됨 (7 페이지)
 ```
 
-| 항목 | 내용 |
+## 규모
+
+| | 통합 전 | 통합 후 |
+|---|---|---|
+| campus-graph 노드 | 232 | **1,030** |
+| campus-graph 엣지 | 504 | **1,611** |
+| 미래관 노드 | 15 (층 단위) | **813 (호실 문 단위)** |
+| 검색 가능 | 96 | **279** (미래관 호실 180 포함) |
+| 지도 | 캠퍼스 + 북악관 2층 + 조형관 2층 | + **미래관 8개 층** |
+
+## 동작 확인 (통합 시점)
+
+```
+                                     거리   시간  계단 EV  BF   지도 전환
+미래관 앞 광장 -> 338호  barrier_free  124m   3분   0   1   O   campus -> mirae-4f -> mirae-3f
+종합복지관 1층 -> 338호  barrier_free  119m   3분   0   1   O   campus -> mirae-3f
+북악관 1층 -> 338호      fastest       396m   7분   0   0   X   campus -> mirae-4f -> mirae-3f
+실외 보행로 -> 730호     barrier_free  168m   3분   0   1   O   campus -> mirae-1f -> mirae-7f
+202호 -> 730호          fastest        99m   2분   0   1   O   mirae-2f -> mirae-7f
+338호 -> 337호          fastest         26m   1분   0   0   O   mirae-3f
+```
+
+단계 안내 예시 (미래관 앞 광장 → 338호, `barrier_free`)
+
+```
+0. [enter]     미래관 4층 으로 들어갑니다.            12m
+1. [walk]      미래관 4층 복도를 따라 84m 이동합니다.  84m
+2. [elevator]  미래관 엘리베이터로 4층 → 3층 이동합니다.
+3. [walk]      미래관 3층 복도를 따라 28m 이동합니다.  28m
+4. [arrive]    미래관 338호 에 도착했습니다.
+```
+
+경사 캠퍼스라 미래관은 **4층에서 지면과 만난다.** 광장에서 들어가면 4층이고,
+338호까지 엘리베이터로 내려간다. 이 동작이 데이터에 반영되어 있다.
+
+## 어떻게 이어져 있나
+
+`kmu-indoor-nav/scripts/export_to_campus_graph.py` 가 실내 그래프를 팀원 앱
+형식으로 변환해 아래 4개를 갱신한다.
+
+| 대상 | 내용 |
 |---|---|
-| 그래프 | `data/campus-graph.json` v0.4.0-r3 |
-| 규모 | 건물 21개 · 노드 232개 · 엣지 504개 |
-| 노드 구성 | 실외 145 · 분기점 76 · 출입구 11 |
-| 건물별 노드 | 북악관 16, 미래관 15, 산학협력관 6, 공학관 6, 경영관 6, 종합복지관 6, 예술관 6, 경상관 5, 국제관 5, 콘서트홀 5, 성곡도서관 1 |
-| 지도 | `public/maps/campus.svg` + 북악관 1F/4F, 조형관 1F/3F |
-| 엔진 | `lib/graph.ts`, `lib/cost.ts` |
-| 빌더 | `tools/build-graph.mjs`, `tools/build-campus-map.mjs` |
-| 고도 | `baseElevation` + `assumptions` 로 경사 반영 |
-| API | `app/api/route`, `app/api/nodes` |
-
-강점: 캠퍼스 전역을 덮고, 실외 경사를 다루며, 사용자 화면이 완성되어 있다.
-
-## 2. kmu-indoor-nav — 미래관 실내 (Python)
+| `data/campus-graph.json` | 미래관 15노드 → 813노드 교체 |
+| `data/graph-coords.json` | 미래관 노드 813개 좌표 기록 |
+| `public/maps/mirae-*.png` | 층 도면 8장 복사 |
+| `lib/ui/maps.ts` | `MAP_REGISTRY` 에 미래관 8개 층 등록 |
 
 ```bash
 cd kmu-indoor-nav
-python scripts/build_from_navmap.py          # 층별 지도 -> 그래프
-python demo/server.py 8900                   # http://127.0.0.1:8900
-python tests/test_routing_synthetic.py       # 29개
-python tests/test_mirae_real_graph.py        # 18개
-python tests/test_merge_parts.py             # 10개
+python scripts/build_from_navmap.py            # 도면 -> 실내 그래프
+python scripts/export_to_campus_graph.py --check  # 미리보기
+python scripts/export_to_campus_graph.py          # 적용 (백업 생성)
+cd .. && npm run typecheck && npm run build
 ```
 
-| 항목 | 내용 |
-|---|---|
-| 그래프 | `data/demo/mirae_nav_v1.json` |
-| 규모 | 미래관 8개 층(지하1층~7층) · 호실 180개 · 노드 813개 · 엣지 2,344개 |
-| 승강기 | 샤프트 4개 (주 샤프트는 1~7층 정차) |
-| 도달성 | 호실 180개 중 179개 |
-| 엔진 | `backend/app/routing/` (Dijkstra, 시간/선호 분리) |
-| 의존성 | `requests`, `Pillow` 만 |
+**좌표 변환이 필요 없다.** 팀원 앱은 배경을 `<img>` 로 깔고 오버레이 `<svg>` 의
+viewBox 를 이미지 크기에 맞추므로, 실내 그래프의 도면 픽셀 좌표가 그대로
+화면 좌표가 된다.
 
-강점: 한 건물의 실내를 문 단위까지 상세히 다루고, 접근성 근거 추적
-(`unknown` 보존, 5단계 검증 수준)과 파트 분할 병합 구조를 갖췄다.
+**외부 연결을 보존한다.** 팀원의 미래관 층 노드는 외부 연결 9개를 들고 있었다
+(종합복지관 1~4층, 예술관 B2, 실외 3곳). 이를 각 층의 대표 노드로 9/9 재부착한다.
+우선순위는 출입구 → 엘리베이터 → 복도.
 
-## 3. 겹치는 부분
-
-두 프로젝트 모두 **경로 탐색 엔진**을 가지고 있다.
-
-| | 루트 (TS) | kmu-indoor-nav (Python) |
-|---|---|---|
-| 범위 | 캠퍼스 전역 실외 + 출입구 | 미래관 실내 전층 |
-| 미래관 노드 | 15개 (출입구·분기점 수준) | 813개 (호실 문 단위) |
-| 좌표 | 지리 좌표 + SVG | 층별 지도 픽셀 좌표 |
-| 경사 | 실외 고도 반영 | 실내라 해당 없음 |
-| 접근성 | 비용 가중 | 하드 제약 + 근거 수준 추적 |
-
-미래관에 대해 두 그래프가 **동시에 존재한다.** 루트 쪽은 15개 노드로 개략,
-실내 쪽은 813개 노드로 상세하다. 지금은 서로 참조하지 않는다.
-
-## 4. 다음 단계 — 실제로 연결하려면
-
-권장 구성은 **루트 앱이 제품, 실내 그래프가 상세 데이터 공급원**이다.
-
-**(1) 좌표계 정합** — 실내 그래프는 층별 지도 픽셀 좌표만 갖는다
-(`plan:mirae/F3`). 루트 앱은 지리 좌표를 쓴다. 미래관 출입구 노드를 기준점으로
-삼아 변환을 구해야 한다. 실내 쪽에 이미 출입구 노드가 8개 있다
-(`entrance_inside`).
-
-**(2) 스키마 변환** — 실내 그래프를 루트 앱의 노드/엣지 형식으로 내보내는
-변환기가 필요하다. 실내 쪽 스키마가 더 풍부하므로(근거 수준, 방향별 경사,
-운영시간) 손실 없이 줄이려면 매핑 표를 먼저 합의해야 한다.
-
-**(3) 연결 지점 선언** — 실내 쪽에 이미 파트 분할 병합 구조가 있다
-(`kmu-indoor-nav/docs/contributing_parts.md`). 루트 앱의 미래관 출입구 노드와
-실내 그래프의 `entrance_inside` 노드를 `data/links/` 형식으로 이으면 된다.
-국민대는 경사 캠퍼스라 **한 건물이 여러 층에서 지면과 만나므로** 출입구마다
-만나는 층을 명시해야 한다.
-
-**(4) 엔진 하나 고르기** — 두 엔진을 유지하면 「계단 없이」 같은 조건의 해석이
-갈릴 수 있다. 사용자에게 보이는 경로는 한쪽에서만 계산하는 편이 안전하다.
-
-가장 작은 검증 단위: **미래관 출입구 1개소를 두 그래프에서 잇고,
-「정문에서 미래관 338호까지」가 끝까지 나오는지 확인한다.**
-
-## 5. 검증 상태 (통합 시점)
+## 검증
 
 ```
-루트 (Next.js)
-  npm install       372 packages, 22초
-  npm run typecheck  exit=0
-  npm run build      exit=0, 7 페이지
+npm run typecheck        exit=0
+npm run build            exit=0 (7 페이지)
+좌표 없는 노드            0 / 1,030
+미등록 지도 참조           0
+미래관 좌표 누락           0 / 813
 
-kmu-indoor-nav (Python)
+kmu-indoor-nav
   test_routing_synthetic  29/29
   test_mirae_real_graph   18/18
   test_merge_parts        10/10
   validate_graph          치명적 0건
-  merge_graphs            exit=0
-  route 202->730          ok  99.3m  2층 -> 7층
 ```
 
-## 6. 병합 이력 참고
+## 각 프로젝트 요약
+
+### 루트 — 캠퍼스 전역 (Next.js)
+
+실외 보행로는 OpenStreetMap, 층간 연결·엘리베이터·고도는 `data/campus-facts.json`.
+엔진은 `lib/graph.ts` (다익스트라, 순수 함수라 서버·브라우저 양쪽에서 동작).
+이동 방식 4종: `fastest`, `fewest_stairs`, `barrier_free`, `stay_dry`.
+
+### kmu-indoor-nav — 미래관 실내 (Python)
+
+층별 지도에서 복도망을 자동 추출한다. 상세 내용은 `kmu-indoor-nav/README.md`.
+
+- 색상 규약(민트=복도, 파랑=엘리베이터, 주황=계단, 초록=출입구)으로 분류
+- 복도와 방은 **형태로 구분** (층마다 색조가 달라 색으로는 불가능)
+- Zhang-Suen 세선화 → 복도 중심선 → 분기점/문 노드
+- 문은 호실 이름표에서 가장 가까운 복도 셀, 연결선은 복도 내 BFS 경로
+- 승강기는 층간 위치 클러스터링으로 샤프트 구분 (4개)
+- 미래관 8개 층 · 호실 180개 · 노드 813 · 엣지 2,344
+
+의존성은 `requests`, `Pillow` 뿐이다.
+
+## 남은 것
+
+- **엔진이 둘이다.** 제품 경로는 루트 TS 엔진이 계산한다. Python 엔진은 실내
+  데이터 생성·검증용으로 남는다. 접근성 조건 해석이 다르므로(Python 쪽은
+  미확인 속성을 하드 제약으로 차단, TS 쪽은 비용 가중) 판정이 갈릴 수 있다.
+- **미래관 외 건물은 여전히 층 단위**다. 같은 파이프라인으로 확장할 수 있다.
+- **현장 미검증.** 문턱·유효폭·경사·승강기 정차층은 추정값이다.
+  조사 항목은 `kmu-indoor-nav/docs/data_gaps.md` 에 대상 ID 별로 정리했다.
+- 미래관 도면은 AI 로 단순화한 시안이라 호실명·벽 위치에 오류가 있을 수 있다.
+
+## 병합 이력
 
 - 팀원 브랜치 `feat/kmu-wayfinder-engine` 은 독립 히스토리로 만들어져
   `--allow-unrelated-histories` 로 병합했다. 충돌 0건.
-- `18acdfa` 에서 `kmu-wayfinder/` 디렉터리(125개 파일)가 삭제되었다.
-  기존 정적 사이트와 그 하위에 있던 실내 프로젝트가 함께 지워졌으므로,
-  실내 프로젝트는 최상위 `kmu-indoor-nav/` 로 위치를 옮겨 다시 넣었다.
-  삭제된 정적 사이트는 되살리지 않았다 (Next.js 앱이 이를 대체).
+- `18acdfa` 에서 `kmu-wayfinder/` 125개 파일이 삭제되었다(정적 사이트 + 그 하위
+  실내 프로젝트). Next.js 앱이 정적 사이트를 대체하므로 되살리지 않고,
+  실내 프로젝트만 최상위 `kmu-indoor-nav/` 로 옮겨 넣었다.
