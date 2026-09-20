@@ -1,0 +1,191 @@
+{
+  "_README": [
+    "이 파일을 복사해서 data/parts/<내파트id>.json 으로 저장하세요.",
+    "파일명과 part.id 가 반드시 같아야 합니다 (병합기가 검사합니다).",
+    "모든 id 는 part.namespace 로 시작해야 합니다. 예: gonghak/F3/352",
+    "다른 파트의 노드와 잇는 엣지는 여기 쓰지 말고 data/links/ 에 쓰세요.",
+    "저장 후: python scripts/merge_graphs.py --check"
+  ],
+
+  "part": {
+    "id": "TEMPLATE",
+    "namespace": "TEMPLATE/",
+    "kind": "building",
+    "owner": "담당자 이름",
+    "note": "kind 는 building | outdoor | area 중 하나"
+  },
+
+  "graph_version": "TEMPLATE-v0",
+  "schema_version": "1.0.0",
+  "generated_at": null,
+
+  "verification_scope": {
+    "field_verified": false,
+    "evidence_level": "무엇을 근거로 만들었는지 한 줄로",
+    "wheelchair_accessible_routes_certified": false,
+    "outdoor_connection": "없음",
+    "vertical_connection": "없음"
+  },
+  "notes": [],
+
+  "buildings": [
+    {
+      "id": "TEMPLATE",
+      "official_name": "건물 공식 명칭",
+      "campus_code": "S0",
+      "aliases": ["별칭1", "별칭2"],
+      "wings": [],
+      "footprint": null,
+      "source_refs": ["출처 URL 또는 문서명"]
+    }
+  ],
+
+  "floorplans": [
+    {
+      "id": "TEMPLATE/plan/F3",
+      "image_ref": "data/raw/<내파트>/F3.png",
+      "width_px": 1672,
+      "height_px": 941,
+      "source_tab_label": "3층",
+      "source_filename": "F3.png",
+      "drawing_floor_label": "지상 3층",
+      "page_tab_id": null,
+      "mapping_status": "pending_review",
+      "scale_m_per_px": {
+        "value": null,
+        "unit": "m/px",
+        "verification": "unknown",
+        "note": "축척을 모르면 null. 그러면 거리/ETA 를 숫자로 제공하지 않습니다"
+      },
+      "control_points": [],
+      "geo_transform": null,
+      "geo_error_estimate_m": {"value": null, "verification": "unknown"},
+      "revision_date": null,
+      "source_refs": [],
+      "usage_terms": "unknown",
+      "notes": []
+    }
+  ],
+
+  "floors": [
+    {
+      "id": "TEMPLATE/F3",
+      "building_id": "TEMPLATE",
+      "label": "3층",
+      "sort_order": 3,
+      "wing_id": null,
+      "plan_id": "TEMPLATE/plan/F3",
+      "elevation_m": {"value": null, "verification": "unknown"},
+      "notes": []
+    }
+  ],
+
+  "places": [
+    {
+      "id": "TEMPLATE/F3/352",
+      "name": "352호",
+      "building_id": "TEMPLATE",
+      "floor_id": "TEMPLATE/F3",
+      "room_label": "352",
+      "aliases": ["352", "352호"],
+      "wing_id": null,
+      "door_node_ids": ["TEMPLATE/F3/door/352"],
+      "status": "drawing_candidate",
+      "label_plan_point": {
+        "coordinate_space": "plan:TEMPLATE/F3",
+        "x_px": 500.0,
+        "y_px": 300.0
+      },
+      "source_refs": [],
+      "notes": []
+    }
+  ],
+
+  "nodes": [
+    {
+      "id": "TEMPLATE/F3/door/352",
+      "kind": "room_door",
+      "building_id": "TEMPLATE",
+      "floor_id": "TEMPLATE/F3",
+      "plan_point": {
+        "coordinate_space": "plan:TEMPLATE/F3",
+        "x_px": 500.0,
+        "y_px": 320.0
+      },
+      "geo_point": null,
+      "name": "352호 문",
+      "facility_id": null,
+      "source_refs": [],
+      "notes": []
+    },
+    {
+      "id": "TEMPLATE/F3/cj/1",
+      "kind": "corridor_junction",
+      "building_id": "TEMPLATE",
+      "floor_id": "TEMPLATE/F3",
+      "plan_point": {
+        "coordinate_space": "plan:TEMPLATE/F3",
+        "x_px": 500.0,
+        "y_px": 360.0
+      },
+      "geo_point": null,
+      "name": null,
+      "facility_id": null,
+      "source_refs": [],
+      "notes": []
+    },
+    {
+      "id": "TEMPLATE/F1/entrance/1",
+      "kind": "entrance_inside",
+      "building_id": "TEMPLATE",
+      "floor_id": "TEMPLATE/F3",
+      "plan_point": {
+        "coordinate_space": "plan:TEMPLATE/F3",
+        "x_px": 120.0,
+        "y_px": 700.0
+      },
+      "geo_point": null,
+      "name": "주 출입구(실내측)",
+      "facility_id": null,
+      "source_refs": [],
+      "notes": ["실외 파트와 이을 지점. data/links/ 에서 연결합니다"]
+    }
+  ],
+
+  "edges": [
+    {
+      "id": "TEMPLATE/F3/e/door/352",
+      "from_node": "TEMPLATE/F3/door/352",
+      "to_node": "TEMPLATE/F3/cj/1",
+      "kind": "door",
+      "horizontal_length_m": {"value": 1.2, "unit": "m", "verification": "drawing_read"},
+      "traversal_length_m": {"value": 1.2, "unit": "m", "verification": "drawing_read"},
+      "vertical_rise_m": {"value": null, "verification": "unknown"},
+      "accessibility": {
+        "stairs": {"value": false, "verification": "drawing_read"},
+        "step_count": {"value": null, "verification": "unknown"},
+        "slope_up_pct": {"value": null, "verification": "unknown"},
+        "slope_down_pct": {"value": null, "verification": "unknown"},
+        "cross_slope_pct": {"value": null, "verification": "unknown"},
+        "clear_width_m": {"value": null, "verification": "unknown"},
+        "threshold_m": {"value": null, "verification": "unknown"},
+        "surface": {"value": null, "verification": "unknown"},
+        "door_operability": {"value": null, "verification": "unknown"},
+        "wheelchair_usable": {"value": null, "verification": "unknown"}
+      },
+      "facility_id": null,
+      "schedule_id": null,
+      "geometry": [[500.0, 320.0], [500.0, 360.0]],
+      "elevator_from_floor": null,
+      "elevator_to_floor": null,
+      "source_refs": [],
+      "notes": [
+        "양방향 통행이면 같은 내용으로 id 에 '/rev' 를 붙인 엣지를 하나 더 만드세요.",
+        "빈 칸을 0 이나 false 로 채우지 마세요. unknown 이 곧 정보입니다."
+      ]
+    }
+  ],
+
+  "elevators": [],
+  "closures": []
+}
